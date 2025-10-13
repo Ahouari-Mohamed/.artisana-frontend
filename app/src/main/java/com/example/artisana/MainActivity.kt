@@ -14,10 +14,8 @@ import com.example.artisana.core.theme.ArtisanaTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge() // This can be removed for simplicity unless you are actively managing insets.
         setContent {
             ArtisanaTheme(
-//                darkTheme = isSystemInDarkTheme()
                 darkTheme = false
             ) {
                 Surface(

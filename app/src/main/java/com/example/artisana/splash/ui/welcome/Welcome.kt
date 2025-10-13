@@ -57,7 +57,7 @@ fun WelcomeScreen(navController: NavHostController) {
 
     // Navigate after 3 seconds
     LaunchedEffect(Unit) {
-        delay(7000)
+        delay(5000)
         navController.navigate(Screen.Onboarding.route) {
             popUpTo(Screen.Welcome.route) { inclusive = true }
         }

@@ -7,7 +7,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.artisana.auth.ui.login.LoginScreen
+import com.example.artisana.auth.ui.register.RegisterScreen
+import com.example.artisana.auth.ui.forgotPassword.ForgotPasswordScreen
 import com.example.artisana.home.ui.details.DetailsScreen
+import com.example.artisana.auth.ui.register.CreatePasswordScreen
+import com.example.artisana.auth.ui.register.AccountSuccessScreen
 import com.example.artisana.home.ui.home.HomeScreen
 import com.example.artisana.splash.ui.onboarding.OnboardingScreen
 import com.example.artisana.splash.ui.welcome.WelcomeScreen
@@ -35,6 +39,21 @@ fun SetupNavGraph(
 
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController)
+        }
+        composable(Screen.Register.route) {
+            RegisterScreen(navController=navController)
+        }
+
+        composable(Screen.CreatePassword.route) {
+            CreatePasswordScreen(navController=navController)
+        }
+
+        composable(Screen.Success.route) {
+            AccountSuccessScreen(navController=navController)
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(navController=navController)
         }
 
         composable(

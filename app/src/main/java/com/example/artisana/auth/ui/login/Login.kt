@@ -1,6 +1,7 @@
 package com.example.artisana.auth.ui.login
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -9,11 +10,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -23,6 +26,8 @@ import com.example.artisana.core.navigation.Screen
 fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
 
     val brownColor = Color(0xFFC4A574)
     val darkBrownColor = Color(0xFFB08D5B)
@@ -82,24 +87,39 @@ fun LoginScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                emailError = ""
+            },
             placeholder = {
                 Text(
                     text = "YourAdresse@example.com",
-                    color = Color.Gray.copy(alpha = 0.5f)
+                    color = Color.Gray.copy(alpha = 0.5f),
+                    fontSize = 12.sp
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Black,
-                unfocusedBorderColor = Color.Black,
+                focusedBorderColor = if (emailError.isEmpty()) Color.Black else Color.Red,
+                unfocusedBorderColor = if (emailError.isEmpty()) Color.Black else Color.Red,
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
+            singleLine = true,
         )
+
+        if (emailError.isNotEmpty()) {
+            Text(
+                text = emailError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -113,45 +133,72 @@ fun LoginScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordError =""
+            },
             placeholder = {
                 Text(
                     text = "Au moins 8 caractères",
-                    color = Color.Gray.copy(alpha = 0.5f)
+                    color = Color.Gray.copy(alpha = 0.5f),
+                    fontSize = 12.sp
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Black,
-                unfocusedBorderColor = Color.Black,
+                focusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
+                unfocusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             ),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
+            singleLine = true,
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        if (passwordError.isNotEmpty()) {
+            Text(
+                text = passwordError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, top = 4.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Forgot password
         Text(
             text = "Mot de passe oublié?",
+            textDecoration = TextDecoration.Underline,
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = textColor,
+            textAlign = TextAlign.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 4.dp),
-            textAlign = TextAlign.End
+                .padding(end = 4.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ){
+                    navController.navigate(Screen.ForgotPassword.route)
+                }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Login button
         Button(
             onClick = {
-                navController.navigate(Screen.Home.route)
+                if (email.isBlank()) {
+                    emailError = "Veuillez entrer votre email"
+                }
+                if (password.isBlank()) {
+                    passwordError = "Veuillez entrer votre mot de passe"
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -200,15 +247,24 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "vous n'avez pas de compte? ",
+                text = "Vous n'avez pas de compte? ",
                 fontSize = 14.sp,
                 color = Color.Black
             )
+
             Text(
                 text = "S'inscrire",
                 fontSize = 14.sp,
                 color = textColor,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ){
+                        navController.navigate(Screen.Register.route)
+                    }
             )
         }
 
