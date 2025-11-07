@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.artisana.core.navigation.Screen
 
@@ -28,6 +29,8 @@ fun LoginScreen(navController: NavHostController) {
     var password by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
+
+    var login by remember { mutableStateOf(false) }
 
     val brownColor = Color(0xFFC4A574)
     val darkBrownColor = Color(0xFFB08D5B)
@@ -195,9 +198,29 @@ fun LoginScreen(navController: NavHostController) {
             onClick = {
                 if (email.isBlank()) {
                     emailError = "Veuillez entrer votre email"
+                    login = false
+                } else {
+                    emailError = ""
+                    login = true
                 }
                 if (password.isBlank()) {
                     passwordError = "Veuillez entrer votre mot de passe"
+                    login = false
+                } else {
+                    emailError = ""
+                    login = true
+                }
+
+                if (login){
+                    navController.navigate(Screen.Home.route) {
+                        // Pop up to the root of the entire navigation graph.
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+
+                        // Ensure there's only one copy of the Home screen on the stack
+                         launchSingleTop = true
+                    }
                 }
             },
             modifier = Modifier

@@ -2,25 +2,25 @@ package com.example.artisana.splash.ui.welcome
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
 import kotlinx.coroutines.delay
 
 @Composable
 fun WelcomeScreen(navController: NavHostController) {
     val brownColor = Color(0xFFB4916C)
-    val lightBrownColor = Color(0xFFC2B89C)
 
     // Animated dots
     val infiniteTransition = rememberInfiniteTransition(label = "dots")
@@ -57,7 +57,7 @@ fun WelcomeScreen(navController: NavHostController) {
 
     // Navigate after 3 seconds
     LaunchedEffect(Unit) {
-        delay(5000)
+        delay(3000)
         navController.navigate(Screen.Onboarding.route) {
             popUpTo(Screen.Welcome.route) { inclusive = true }
         }
@@ -67,50 +67,31 @@ fun WelcomeScreen(navController: NavHostController) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        // Decorative dots in background
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // Top left dot
-            drawCircle(
-                color = brownColor.copy(alpha = 0.3f),
-                radius = 8.dp.toPx(),
-                center = Offset(50.dp.toPx(), 160.dp.toPx())
-            )
-            // Top right dot
-            drawCircle(
-                color = lightBrownColor.copy(alpha = 0.2f),
-                radius = 6.dp.toPx(),
-                center = Offset(size.width - 70.dp.toPx(), 200.dp.toPx())
-            )
-            // Bottom right dot
-            drawCircle(
-                color = lightBrownColor.copy(alpha = 0.25f),
-                radius = 7.dp.toPx(),
-                center = Offset(size.width - 60.dp.toPx(), size.height - 340.dp.toPx())
-            )
-        }
+        // Background Image
+        Image(
+            painter = painterResource(R.drawable.img_welcome_bg), // Replace with your image name
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
         Column(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
                 .padding(vertical = 30.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Logo
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Canvas(modifier = Modifier.size(16.dp)) {
-                    drawCircle(color = brownColor)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Artisana",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = brownColor
-                )
-            }
+            Icon(
+                painterResource(R.drawable.ic_artisana),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .width(240.dp)
+                    .height(100.dp),
+                tint = brownColor,
+            )
+
 
             Spacer(Modifier.fillMaxHeight(.55f))
 
