@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -58,7 +59,7 @@ fun CartScreen(navController: NavHostController) {
                         "Panier",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 },
                 navigationIcon = {
@@ -68,12 +69,12 @@ fun CartScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.ic_return),
                             contentDescription = "Back",
-                            tint = Color(0xFF2C2C2C)
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -82,7 +83,7 @@ fun CartScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Column(
                 modifier = Modifier
@@ -113,13 +114,13 @@ fun CartScreen(navController: NavHostController) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
                 HorizontalDivider(
                     modifier = Modifier.padding(bottom = 16.dp),
                     thickness = 1.dp,
-                    color = Color(0xFFE0E0E0)
+                    color = MaterialTheme.colorScheme.outline
                 )
 
                 Row(
@@ -132,13 +133,13 @@ fun CartScreen(navController: NavHostController) {
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
                         letterSpacing = 1.sp,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "MAD $subtotal",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFB8956A)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -147,7 +148,7 @@ fun CartScreen(navController: NavHostController) {
                 Text(
                     text = "*Les frais de livraison, les taxes et les codes de réduction sont calculés au moment de la facturation.",
                     fontSize = 11.sp,
-                    color = Color(0xFF999999),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     lineHeight = 16.sp
                 )
 
@@ -159,13 +160,13 @@ fun CartScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFFB8956A)
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(4.dp),
                     border = BorderStroke(
                         1.dp,
-                        Color(0xFFB8956A)
+                        MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -196,16 +197,21 @@ fun CartItemCard(
             modifier = Modifier
                 .size(120.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             // Replace with: Image(painter = painterResource(item.imageRes), ...)
-            Text(
-                "Product Image",
-                fontSize = 10.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Home,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -226,7 +232,7 @@ fun CartItemCard(
                         text = item.name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         letterSpacing = 0.5.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -234,7 +240,7 @@ fun CartItemCard(
                         text = item.price,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFFB8956A)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -245,7 +251,7 @@ fun CartItemCard(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Remove",
-                        tint = Color(0xFF999999),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -263,14 +269,14 @@ fun CartItemCard(
                     Text(
                         "−",
                         fontSize = 20.sp,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
                 Text(
                     text = item.quantity.toString(),
                     fontSize = 14.sp,
-                    color = Color(0xFF2C2C2C),
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.widthIn(min = 20.dp),
                     textAlign = TextAlign.Center
                 )
@@ -282,7 +288,7 @@ fun CartItemCard(
                     Text(
                         "+",
                         fontSize = 20.sp,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }

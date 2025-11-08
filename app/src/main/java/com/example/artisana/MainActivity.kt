@@ -24,8 +24,8 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember { mutableStateOf(systemTheme) }
 
             ArtisanaTheme(
-//                darkTheme = isDarkTheme,
-                darkTheme = false,
+                darkTheme = isDarkTheme,
+//                darkTheme = false,
                 toggleDarkTheme = {
                     isDarkTheme = it
                 }

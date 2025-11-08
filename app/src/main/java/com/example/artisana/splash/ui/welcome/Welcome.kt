@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.*
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -89,7 +90,7 @@ fun WelcomeScreen(navController: NavHostController) {
                 modifier = Modifier
                     .width(240.dp)
                     .height(100.dp),
-                tint = brownColor,
+                tint = MaterialTheme.colorScheme.primary,
             )
 
 

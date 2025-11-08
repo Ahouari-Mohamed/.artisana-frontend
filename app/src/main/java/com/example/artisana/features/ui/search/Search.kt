@@ -84,7 +84,7 @@ fun SearchScreen(navController: NavHostController) {
                         "Rechercher",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
@@ -96,12 +96,12 @@ fun SearchScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.ic_shopping_bag),
                             contentDescription = "Cart",
-                            tint = Color(0xFF8B7355)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -116,7 +116,7 @@ fun SearchScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // 1. Base Content (Search Bar and Results)
             Column(
@@ -147,7 +147,7 @@ fun SearchScreen(navController: NavHostController) {
                         placeholder = {
                             Text(
                                 "Search",
-                                color = Color(0xFF999999),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 fontSize = 16.sp
                             )
                         },
@@ -155,14 +155,16 @@ fun SearchScreen(navController: NavHostController) {
                             Icon(
                                 Icons.Outlined.Search,
                                 contentDescription = "Search",
-                                tint = Color(0xFF999999)
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFE0E0E0),
-                            unfocusedBorderColor = Color(0xFFE0E0E0),
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            focusedBorderColor = MaterialTheme.colorScheme.outline,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         shape = RoundedCornerShape(8.dp),
                         singleLine = true,
@@ -180,7 +182,7 @@ fun SearchScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.ic_filter),
                             contentDescription = "Filter",
-                            tint = Color(0xFFB8956A)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -197,12 +199,12 @@ fun SearchScreen(navController: NavHostController) {
                         text = "Résultat pour \"$searchQuery\"",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "${searchResults.count().toString().replace(" ", "").trim()} résultats",
                         fontSize = 14.sp,
-                        color = Color(0xFFB8956A)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -264,10 +266,10 @@ fun RecentSearchesContent(
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(8.dp),
-                spotColor = Color.Black.copy(alpha = 0.2f)
+                spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .heightIn(max = 225.dp)
             .padding(top = 12.dp, bottom = 12.dp, start = 20.dp, end = 12.dp),
     ) {
@@ -280,7 +282,7 @@ fun RecentSearchesContent(
                 text = "Recherches récentes",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF2C2C2C),
+                color = MaterialTheme.colorScheme.onSurface,
             )
             TextButton(
                 onClick = onClearAll,
@@ -290,7 +292,7 @@ fun RecentSearchesContent(
                     fontSize = 14.sp,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.padding(0.dp),
-                    color = Color(0xFFB8956A)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -319,13 +321,13 @@ fun RecentSearchesContent(
                         Icon(
                             Icons.Outlined.Search,
                             contentDescription = null,
-                            tint = Color(0xFF999999),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = search,
                             fontSize = 15.sp,
-                            color = Color(0xFF666666)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
 
@@ -336,7 +338,7 @@ fun RecentSearchesContent(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "Remove",
-                            tint = Color(0xFF999999),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -361,16 +363,21 @@ fun SearchResultCard(
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             // Replace with: Image(painter = painterResource(product.imageRes), ...)
-            Text(
-                "Product Image",
-                fontSize = 10.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Home,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -391,7 +398,7 @@ fun SearchResultCard(
                         text = product.name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         letterSpacing = 0.5.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -399,7 +406,7 @@ fun SearchResultCard(
                         text = product.price,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFFB8956A)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -410,7 +417,7 @@ fun SearchResultCard(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Remove",
-                        tint = Color(0xFF999999),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(20.dp)
                     )
                 }

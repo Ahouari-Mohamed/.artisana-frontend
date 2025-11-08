@@ -13,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,7 +31,7 @@ fun ProfileScreen(navController: NavHostController) {
     val scrollState = rememberScrollState()
 
     val themeState = LocalThemeState.current
-    val isDarkMode = themeState.isDark // Read the current state
+    val isDarkMode = themeState.isDark
     val toggleDarkMode = themeState.toggleDarkTheme
 
     Scaffold(
@@ -43,13 +42,13 @@ fun ProfileScreen(navController: NavHostController) {
                         "Profile",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -65,7 +64,7 @@ fun ProfileScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -89,7 +88,7 @@ fun ProfileScreen(navController: NavHostController) {
                 Icon(
                     painter = painterResource(R.drawable.ic_edit),
                     contentDescription = "Edit",
-                    tint = Color(0xFF2C2C2C),
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .size(20.dp)
                         .align(Alignment.BottomEnd)
@@ -105,7 +104,7 @@ fun ProfileScreen(navController: NavHostController) {
                 text = "Ahouari Mohamed",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF2C2C2C)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -114,7 +113,7 @@ fun ProfileScreen(navController: NavHostController) {
             Text(
                 text = "youremail@domain.com",
                 fontSize = 14.sp,
-                color = Color(0xFF999999)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -134,23 +133,23 @@ fun ProfileScreen(navController: NavHostController) {
                     Icon(
                         painter = painterResource(R.drawable.ic_dark_mode),
                         contentDescription = "Dark Mode",
-                        tint = Color(0xFF666666),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
                         text = "Mode sombre",
                         fontSize = 16.sp,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
                 Switch(
                     checked = isDarkMode,
                     onCheckedChange = { toggleDarkMode(it) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Color(0xFFB8956A),
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color(0xFFE0E0E0)
+                        checkedThumbColor = MaterialTheme.colorScheme.surface,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.surface,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.outline
                     )
                 )
             }
@@ -198,7 +197,6 @@ fun ProfileScreen(navController: NavHostController) {
             OutlinedButton(
                 onClick = {
                     navController.navigate(Screen.Login.route) {
-                        // Pop up to the root of the entire navigation graph.
                         popUpTo(navController.graph.id) {
                             inclusive = true
                         }
@@ -208,11 +206,11 @@ fun ProfileScreen(navController: NavHostController) {
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFB8956A)
+                    contentColor = MaterialTheme.colorScheme.primary
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
-                    Color(0xFFB8956A)
+                    MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -250,13 +248,13 @@ fun ProfileMenuItem(
             Icon(
                 painter = painterResource(id),
                 contentDescription = text,
-                tint = Color(0xFF666666),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.size(24.dp)
             )
             Text(
                 text = text,
                 fontSize = 16.sp,
-                color = Color(0xFF2C2C2C)
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -264,7 +262,7 @@ fun ProfileMenuItem(
             Text(
                 text = trailingText,
                 fontSize = 14.sp,
-                color = Color(0xFFB8956A)
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }

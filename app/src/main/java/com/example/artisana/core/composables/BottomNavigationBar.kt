@@ -22,11 +22,11 @@ fun BottomNavigationBar(
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             thickness = 0.5.dp,
-            color = Color.LightGray
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         )
 
         NavigationBar(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.background,
             tonalElevation = 8.dp
         ) {
             NavigationBarItem(
@@ -50,8 +50,8 @@ fun BottomNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFB8956A),
-                    unselectedIconColor = Color(0xFF999999),
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     indicatorColor = Color.Transparent
                 )
             )
@@ -73,8 +73,8 @@ fun BottomNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFB8956A),
-                    unselectedIconColor = Color(0xFF999999),
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     indicatorColor = Color.Transparent
                 )
             )
@@ -96,8 +96,8 @@ fun BottomNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFB8956A),
-                    unselectedIconColor = Color(0xFF999999),
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     indicatorColor = Color.Transparent
                 )
             )
@@ -119,8 +119,8 @@ fun BottomNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFB8956A),
-                    unselectedIconColor = Color(0xFF999999),
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     indicatorColor = Color.Transparent
                 )
             )

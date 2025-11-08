@@ -48,7 +48,7 @@ fun HomeScreen(navController: NavHostController) {
                     Icon(
                         painterResource(R.drawable.ic_artisana),
                         contentDescription = "Logo",
-                        tint = Color(0xFFB8956A),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 },
                 actions = {
@@ -58,12 +58,12 @@ fun HomeScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.ic_shopping_bag),
                             contentDescription = "Cart",
-                            tint = Color(0xFF8B7355)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -79,7 +79,7 @@ fun HomeScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Hero Section with Artisan Image
             Box(
@@ -120,7 +120,7 @@ fun HomeScreen(navController: NavHostController) {
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 letterSpacing = 2.sp,
-                color = Color(0xFF2C2C2C)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Row(
@@ -131,7 +131,7 @@ fun HomeScreen(navController: NavHostController) {
                 Icon(
                     painter = painterResource(R.drawable.ic_separator),
                     contentDescription = null,
-                    tint = Color(0xFFB8956A),
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
 
@@ -172,18 +172,18 @@ fun HomeScreen(navController: NavHostController) {
                 Text(
                     "Voir tous nos Produits",
                     fontSize = 14.sp,
-                    color = Color(0xFF2C2C2C)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 TextButton(onClick = { /* Navigate to products */ }) {
                     Text(
                         "Explorer",
-                        color = Color(0xFFB8956A),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp
                     )
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = Color(0xFFB8956A),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -203,7 +203,7 @@ fun HomeScreen(navController: NavHostController) {
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 2.sp,
-                    color = Color(0xFF2C2C2C)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Row(
@@ -214,7 +214,7 @@ fun HomeScreen(navController: NavHostController) {
                     Icon(
                         painter = painterResource(R.drawable.ic_separator),
                         contentDescription = null,
-                        tint = Color(0xFFB8956A),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -223,7 +223,7 @@ fun HomeScreen(navController: NavHostController) {
                 Icon(
                     painter = painterResource(R.drawable.ic_gift),
                     contentDescription = "Gift",
-                    tint = Color(0xFFB8956A),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(68.dp)
                 )
 
@@ -233,7 +233,7 @@ fun HomeScreen(navController: NavHostController) {
                     text = "Besoin d'un emballage cadeau? Contactez-nous par chat, 24 h/24 et 7 j/7 ! Pour les commandes urgentes, veuillez nous appeler.",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
-                    color = Color(0xFF666666),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     lineHeight = 20.sp
                 )
 
@@ -245,13 +245,13 @@ fun HomeScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFFB8956A)
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(4.dp),
                     border = BorderStroke(
                         1.dp,
-                        Color(0xFFB8956A)
+                        MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
@@ -271,27 +271,27 @@ fun HomeScreen(navController: NavHostController) {
 fun BadgeItem(text: String, iconId: Int) {
     Row(
         modifier = Modifier
-            .background(Color.White, RoundedCornerShape(4.dp)),
+            .background(Color.Transparent, RoundedCornerShape(4.dp)),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(5.dp))
-                .background(Color(0xFFebe6d7))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .padding(4.dp)
         ) {
             Icon(
                 painter = painterResource(iconId),
                 contentDescription = null,
-                tint = Color(0xFFB8956A),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(25.dp)
             )
         }
         Text(
             text = text,
             fontSize = 10.sp,
-            color = Color(0xFFB8956A)
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }

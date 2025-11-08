@@ -14,11 +14,11 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,13 +41,13 @@ fun ProductCard(
 ) {
     Column(
         modifier = modifier
-            .clickable(onClick = onClick) // Apply clickable to the whole column
+            .clickable(onClick = onClick)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
         ) {
             // Placeholder for product image
             // Replace with: Image(painter = painterResource(product.imageRes), ...)
@@ -58,7 +58,7 @@ fun ProductCard(
                 Icon(
                     Icons.Outlined.Home,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
                     modifier = Modifier.size(48.dp)
                 )
             }
@@ -73,25 +73,25 @@ fun ProductCard(
                 Icon(
                     Icons.Outlined.FavoriteBorder,
                     contentDescription = "Favorite",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.surface
                 )
             }
         }
 
         Column(
-            modifier = Modifier.padding(top = 8.dp, start = 0.dp, end = 0.dp, bottom = 0.dp) // Adjust padding to match text alignment
+            modifier = Modifier.padding(top = 8.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
         ) {
             Text(
                 text = product.name,
                 fontSize = 14.sp,
-                color = Color(0xFF2C2C2C),
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Normal
             )
             Text(
                 text = product.price,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFFB8956A)
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
