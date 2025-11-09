@@ -33,7 +33,6 @@ import com.example.artisana.core.navigation.Screen
 @Composable
 fun HomeScreen(navController: NavHostController) {
     val scrollState = rememberScrollState()
-
     val products = remember {
         mutableStateListOf(
             Product("1", "Brass Pendant", "MAD 760", 0),
@@ -174,7 +173,7 @@ fun HomeScreen(navController: NavHostController) {
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                TextButton(onClick = { /* Navigate to products */ }) {
+                TextButton(onClick = { navController.navigate(Screen.Search.route) }) {
                     Text(
                         "Explorer",
                         color = MaterialTheme.colorScheme.primary,

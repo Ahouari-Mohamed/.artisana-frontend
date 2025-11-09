@@ -58,7 +58,7 @@ fun DetailsScreen(
     }
 
     val recommendedProducts = remember {
-        listOf(
+        mutableStateListOf(
             Product("2", "Brass Pendant", "MAD 760", 0),
             Product("3", "Brass Pendant", "MAD 480", 0),
             Product("4", "Brass Pendant", "MAD 280", 0),
@@ -147,7 +147,7 @@ fun DetailsScreen(
                     Icon(
                         if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.surface
+                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -241,9 +241,8 @@ fun DetailsScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Add to Basket Button
                 OutlinedButton(
-                    onClick = { /* Add to basket */ },
+                    onClick = { navController.navigate(Screen.Cart.route) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -262,7 +261,7 @@ fun DetailsScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "ADD TO BASKET",
+                        "AJOUTER AU PANIER",
                         fontSize = 14.sp,
                         letterSpacing = 1.sp
                     )
@@ -329,7 +328,10 @@ fun DetailsScreen(
                         product = product,
                         modifier = Modifier,
                         onFavoriteClick = {
-
+                            val index = recommendedProducts.indexOf(product)
+                            if (index != -1) {
+                                recommendedProducts[index] = product.copy(isFavorite = !product.isFavorite)
+                            }
                         },
                         onClick = {
                             navController.navigate(Screen.Details.createRoute(productId = product.id))
