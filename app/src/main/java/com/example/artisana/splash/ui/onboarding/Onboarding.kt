@@ -1,12 +1,12 @@
 package com.example.artisana.splash.ui.onboarding
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,9 +24,6 @@ import com.example.artisana.core.navigation.Screen
 
 @Composable
 fun OnboardingScreen(navController: NavHostController) {
-    val brownColor = Color(0xFFB4916C)
-    val darkBrownColor = Color(0xFFB08D5B)
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -47,21 +44,14 @@ fun OnboardingScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.fillMaxHeight(.15f))
 
             // Logo
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Canvas(modifier = Modifier.size(12.dp)) {
-                    drawCircle(color = brownColor)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Artisana",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = brownColor
-                )
-            }
+            Icon(
+                painterResource(R.drawable.ic_artisana),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .width(140.dp)
+                    .height(100.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
 
             Spacer(modifier = Modifier.fillMaxHeight(.15f))
 
@@ -70,7 +60,7 @@ fun OnboardingScreen(navController: NavHostController) {
                 text = "Artisanat Authentique",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
 
@@ -81,7 +71,7 @@ fun OnboardingScreen(navController: NavHostController) {
                 text = "Chaque pièce est fabriquée à la main par des artisans marocains qualifiés, préservant des traditions séculaires et apportant la chaleur du Maroc dans votre maison.",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp,
                 modifier = Modifier.padding(horizontal = 16.dp)
@@ -106,7 +96,7 @@ fun OnboardingScreen(navController: NavHostController) {
                     Text(
                         text = "Fait main",
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -123,7 +113,7 @@ fun OnboardingScreen(navController: NavHostController) {
                     Text(
                         text = "Expédition rapide",
                         fontSize = 12.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -143,17 +133,17 @@ fun OnboardingScreen(navController: NavHostController) {
                     .height(56.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = darkBrownColor
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text(
                     text = "Se connecter",
                     fontSize = 16.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(35.dp))
         }
     }
 }

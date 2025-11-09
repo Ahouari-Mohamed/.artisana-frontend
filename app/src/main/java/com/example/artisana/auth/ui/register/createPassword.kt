@@ -3,8 +3,6 @@ package com.example.artisana.auth.ui.register
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
@@ -14,14 +12,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
 
 fun isValidPassword(password: String): Boolean {
@@ -41,13 +39,10 @@ fun CreatePasswordScreen(navController: NavHostController) {
     var passwordError by remember { mutableStateOf("") }
     var confirmPasswordError by remember { mutableStateOf("") }
 
-    val textColor = Color(0xFFB08D5B)
-    val darkBrownColor = Color(0xFFB08D5B)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 100.dp),
+            .padding(start = 24.dp, end = 24.dp, top = 100.dp, bottom = 60.dp),
         horizontalAlignment = Alignment.Start
     ) {
 
@@ -57,19 +52,18 @@ fun CreatePasswordScreen(navController: NavHostController) {
                 .size(48.dp)
                 .border(
                     width = 1.dp,
-                    color = textColor, // or your desired color
+                    color = MaterialTheme.colorScheme.primary,
                     shape = CircleShape
                 )
-                .clip(CircleShape) // ensures the ripple and background stay circular
+                .clip(CircleShape)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                painter = painterResource(R.drawable.ic_return),
                 contentDescription = "Retour",
-                tint = textColor,
-                modifier = Modifier.size(24.dp) // smaller so it fits nicely inside
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
             )
         }
-
 
         Spacer(modifier = Modifier.height(40.dp))
 
@@ -78,7 +72,7 @@ fun CreatePasswordScreen(navController: NavHostController) {
             text = "Enfin, créez votre mot de passe",
             fontSize = 24.sp,
             fontWeight = FontWeight.Normal,
-            color = textColor,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Start,
             lineHeight = 28.sp
@@ -88,10 +82,10 @@ fun CreatePasswordScreen(navController: NavHostController) {
 
         // Description
         Text(
-            text = "Le mot de passe nécessite un minimum de 8 caractères et contient un mélange de lettres , de chiffres et de symbols.",
+            text = "Le mot de passe nécessite un minimum de 8 caractères et contient un mélange de lettres, de chiffres et de symboles.",
             fontSize = 13.sp,
             fontWeight = FontWeight.Normal,
-            color = Color.Black.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Start,
             lineHeight = 18.sp
@@ -99,104 +93,120 @@ fun CreatePasswordScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Password label
-        Text(
-            text = "Mot de passe",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            color = Color.Black,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Password field
-        OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
-                passwordError = ""
-            },
-            placeholder = {
-                Text(
-                    text = "Votre mot de passe",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 14.sp
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
-                unfocusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            isError = passwordError.isNotEmpty()
-        )
-
-        if (passwordError.isNotEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = passwordError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+                text = "Mot de passe",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = ""
+                },
+                placeholder = {
+                    Text(
+                        text = "Votre mot de passe",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontSize = 14.sp
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
+                isError = passwordError.isNotEmpty()
+            )
+
+            // Fixed height error space
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(32.dp)
                     .padding(start = 8.dp, top = 4.dp)
-            )
+            ) {
+                if (passwordError.isNotEmpty()) {
+                    Text(
+                        text = passwordError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Confirm password label
-        Text(
-            text = "Répéter le mot de passe",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            color = Color.Black,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Confirm password field
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                confirmPasswordError = ""
-            },
-            placeholder = {
-                Text(
-                    text = "Répéter votre mot de passe",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 14.sp
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (confirmPasswordError.isEmpty()) Color.Black else Color.Red,
-                unfocusedBorderColor = if (confirmPasswordError.isEmpty()) Color.Black else Color.Red,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            isError = confirmPasswordError.isNotEmpty()
-        )
-
-        if (confirmPasswordError.isNotEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = confirmPasswordError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+                text = "Répéter le mot de passe",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    confirmPassword = it
+                    confirmPasswordError = ""
+                },
+                placeholder = {
+                    Text(
+                        text = "Répéter votre mot de passe",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontSize = 14.sp
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
+                isError = confirmPasswordError.isNotEmpty()
+            )
+
+            // Fixed height error space
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(32.dp)
                     .padding(start = 8.dp, top = 4.dp)
-            )
+            ) {
+                if (confirmPasswordError.isNotEmpty()) {
+                    Text(
+                        text = confirmPasswordError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -205,46 +215,38 @@ fun CreatePasswordScreen(navController: NavHostController) {
             onClick = {
                 var valid = true
 
-                if (password.isBlank()) {
-                    passwordError = "Veuillez entrer un mot de passe"
-                    valid = false
-                } else if (!isValidPassword(password)) {
-                    passwordError = "Le mot de passe doit contenir au moins 8 caractères, des lettres, des chiffres et des symboles"
-                    valid = false
-                }
-
-                if (confirmPassword.isBlank()) {
-                    confirmPasswordError = "Veuillez confirmer votre mot de passe"
-                    valid = false
-                } else if (password != confirmPassword) {
-                    confirmPasswordError = "Les mots de passe ne correspondent pas"
-                    valid = false
-                }
+//                if (password.isBlank()) {
+//                    passwordError = "Veuillez entrer un mot de passe"
+//                    valid = false
+//                } else if (!isValidPassword(password)) {
+//                    passwordError = "8 caractères min, lettres, chiffres et symboles"
+//                    valid = false
+//                }
+//
+//                if (confirmPassword.isBlank()) {
+//                    confirmPasswordError = "Confirmez votre mot de passe"
+//                    valid = false
+//                } else if (password != confirmPassword) {
+//                    confirmPasswordError = "Les mots de passe ne correspondent pas"
+//                    valid = false
+//                }
 
                 if (valid) {
-                    // Navigate to next screen or complete registration
-                    navController.navigate(Screen.Success.route)
+                    navController.navigate(Screen.SuccessAccount.route)
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = darkBrownColor)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text(
                 text = "S'inscrire",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCreatePasswordScreen() {
-    val navController = rememberNavController()
-    CreatePasswordScreen(navController = navController)
 }

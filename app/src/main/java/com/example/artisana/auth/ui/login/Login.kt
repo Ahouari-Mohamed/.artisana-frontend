@@ -1,6 +1,5 @@
 package com.example.artisana.auth.ui.login
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,8 +19,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
 
 @Composable
@@ -30,12 +30,6 @@ fun LoginScreen(navController: NavHostController) {
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
-    var login by remember { mutableStateOf(false) }
-
-    val brownColor = Color(0xFFC4A574)
-    val darkBrownColor = Color(0xFFB08D5B)
-    val textColor = Color(0xFFB08D5B)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,36 +38,24 @@ fun LoginScreen(navController: NavHostController) {
     ) {
         Spacer(modifier = Modifier.height(80.dp))
 
-        // Logo with dot
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Canvas(
-                modifier = Modifier.size(12.dp)
-            ) {
-                drawCircle(
-                    color = brownColor,
-                    radius = size.minDimension / 2
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Artisana",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Normal,
-                color = brownColor
-            )
-        }
+        // Logo
+        Icon(
+            painterResource(R.drawable.ic_artisana),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .width(140.dp)
+                .height(100.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
 
-        Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.height(50.dp))
 
         // Title
         Text(
             text = "Content de te revoir!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Normal,
-            color = textColor,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Start
         )
@@ -81,94 +63,114 @@ fun LoginScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(32.dp))
 
         // Email field
-        Text(
-            text = "Email",
-            fontSize = 14.sp,
-            color = Color.Black,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                emailError = ""
-            },
-            placeholder = {
-                Text(
-                    text = "YourAdresse@example.com",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 12.sp
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (emailError.isEmpty()) Color.Black else Color.Red,
-                unfocusedBorderColor = if (emailError.isEmpty()) Color.Black else Color.Red,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true,
-        )
-
-        if (emailError.isNotEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = emailError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+                text = "Email",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = ""
+                },
+                placeholder = {
+                    Text(
+                        text = "YourAdresse@example.com",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontSize = 12.sp
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
+            )
+
+            // Error message with fixed height to prevent layout shift
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
-            )
+            ) {
+                if (emailError.isNotEmpty()) {
+                    Text(
+                        text = emailError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Password field
-        Text(
-            text = "Mot de passe",
-            fontSize = 14.sp,
-            color = Color.Black,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = {
-                password = it
-                passwordError =""
-            },
-            placeholder = {
-                Text(
-                    text = "Au moins 8 caractères",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 12.sp
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
-                unfocusedBorderColor = if (passwordError.isEmpty()) Color.Black else Color.Red,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-        )
-
-        if (passwordError.isNotEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = passwordError,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+                text = "Mot de passe",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    passwordError = ""
+                },
+                placeholder = {
+                    Text(
+                        text = "Au moins 8 caractères",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontSize = 12.sp
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                ),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+            )
+
+            // Error message with fixed height
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
-            )
+            ) {
+                if (passwordError.isNotEmpty()) {
+                    Text(
+                        text = passwordError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -178,7 +180,7 @@ fun LoginScreen(navController: NavHostController) {
             text = "Mot de passe oublié?",
             textDecoration = TextDecoration.Underline,
             fontSize = 14.sp,
-            color = textColor,
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.End,
             modifier = Modifier
                 .fillMaxWidth()
@@ -186,8 +188,12 @@ fun LoginScreen(navController: NavHostController) {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
-                ){
-                    navController.navigate(Screen.ForgotPassword.route)
+                ) {
+                    navController.navigate(Screen.ForgotPassword.route) {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                    }
                 }
         )
 
@@ -196,30 +202,28 @@ fun LoginScreen(navController: NavHostController) {
         // Login button
         Button(
             onClick = {
-                if (email.isBlank()) {
-                    emailError = "Veuillez entrer votre email"
-                    login = false
-                } else {
-                    emailError = ""
-                    login = true
-                }
-                if (password.isBlank()) {
-                    passwordError = "Veuillez entrer votre mot de passe"
-                    login = false
-                } else {
-                    emailError = ""
-                    login = true
-                }
+                var isValid = true
 
-                if (login){
+//                if (email.isBlank()) {
+//                    emailError = "Veuillez entrer votre email"
+//                    isValid = false
+//                } else {
+//                    emailError = ""
+//                }
+//
+//                if (password.isBlank()) {
+//                    passwordError = "Veuillez entrer votre mot de passe"
+//                    isValid = false
+//                } else {
+//                    passwordError = ""
+//                }
+
+                if (isValid) {
                     navController.navigate(Screen.Home.route) {
-                        // Pop up to the root of the entire navigation graph.
                         popUpTo(navController.graph.id) {
                             inclusive = true
                         }
-
-                        // Ensure there's only one copy of the Home screen on the stack
-                         launchSingleTop = true
+                        launchSingleTop = true
                     }
                 }
             },
@@ -228,13 +232,13 @@ fun LoginScreen(navController: NavHostController) {
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = darkBrownColor
+                containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
             Text(
                 text = "Se connecter",
                 fontSize = 16.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
@@ -248,17 +252,19 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
-                thickness = DividerDefaults.Thickness, color = Color.Gray.copy(alpha = 0.3f)
+                thickness = DividerDefaults.Thickness,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
             Text(
                 text = "Ou",
                 modifier = Modifier.padding(horizontal = 16.dp),
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 fontSize = 14.sp
             )
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
-                thickness = DividerDefaults.Thickness, color = Color.Gray.copy(alpha = 0.3f)
+                thickness = DividerDefaults.Thickness,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
         }
 
@@ -272,21 +278,25 @@ fun LoginScreen(navController: NavHostController) {
             Text(
                 text = "Vous n'avez pas de compte? ",
                 fontSize = 14.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = "S'inscrire",
                 fontSize = 14.sp,
-                color = textColor,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ){
-                        navController.navigate(Screen.Register.route)
+                    ) {
+                        navController.navigate(Screen.Register.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                        }
                     }
             )
         }

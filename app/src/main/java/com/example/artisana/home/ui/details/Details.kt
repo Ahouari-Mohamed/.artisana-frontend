@@ -44,7 +44,7 @@ fun DetailsScreen(
     productId: String
 ) {
     val scrollState = rememberScrollState()
-    var selectedImageIndex by remember { mutableStateOf(0) }
+    var selectedImageIndex by remember { mutableIntStateOf(0) }
     var isFavorite by remember { mutableStateOf(false) }
 
     // Sample product data
@@ -75,14 +75,21 @@ fun DetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Produit", fontSize = 18.sp) },
+                title = {
+                    Text(
+                        "Produit",
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = {
                         navController.navigateUp()
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_return),
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
@@ -93,12 +100,12 @@ fun DetailsScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_shopping_bag),
                             contentDescription = "Cart",
-                            tint = Color(0xFF8B7355)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -108,14 +115,14 @@ fun DetailsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Main Product Image
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(380.dp)
-                    .background(Color(0xFFF5F5F5))
+                    .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
             ) {
                 // Placeholder for main product image
                 Box(
@@ -125,7 +132,7 @@ fun DetailsScreen(
                     Icon(
                         Icons.Outlined.Home,
                         contentDescription = null,
-                        tint = Color(0xFFB8956A),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(80.dp)
                     )
                 }
@@ -140,7 +147,7 @@ fun DetailsScreen(
                     Icon(
                         if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = if (isFavorite) Color.Red else Color.White
+                        tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.surface
                     )
                 }
             }
@@ -157,10 +164,10 @@ fun DetailsScreen(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF5F5F5))
+                            .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
                             .border(
                                 width = if (selectedImageIndex == index) 2.dp else 0.dp,
-                                color = if (selectedImageIndex == index) Color(0xFFB8956A) else Color.Transparent,
+                                color = if (selectedImageIndex == index) MaterialTheme.colorScheme.primary else Color.Transparent,
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable { selectedImageIndex = index },
@@ -169,8 +176,8 @@ fun DetailsScreen(
                         Icon(
                             Icons.Outlined.Home,
                             contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(32.dp)
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }
@@ -191,13 +198,13 @@ fun DetailsScreen(
                         text = product.name,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "(in Stock)",
                         fontSize = 16.sp,
-                        color = Color(0xFFB8956A),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -209,7 +216,7 @@ fun DetailsScreen(
                     text = product.price,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFFB8956A)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -219,7 +226,7 @@ fun DetailsScreen(
                     text = "DESCRIPTION",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF2C2C2C),
+                    color = MaterialTheme.colorScheme.onBackground,
                     letterSpacing = 1.sp
                 )
 
@@ -229,7 +236,7 @@ fun DetailsScreen(
                     text = "Découvrez l'élégance intemporelle de cette suspension en laiton, un luminaire d'inspiration marocaine qui apporte une touche de luxe et de sophistication à tout intérieur. Sa finition en laiton crée une ambiance chaleureuse et raffinée, évoquant le chic parisien classique. Idéale pour éclairer une table à manger ou un salon, elle diffuse une lumière douce et accueillante, devenant ainsi la pièce maîtresse rayonnante de votre décoration.",
                     fontSize = 14.sp,
                     lineHeight = 22.sp,
-                    color = Color(0xFF757575)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -241,10 +248,10 @@ fun DetailsScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFB8956A)
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFB8956A))
+                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
                     ),
                     shape = RoundedCornerShape(4.dp)
                 ) {
@@ -268,7 +275,7 @@ fun DetailsScreen(
                     text = "Entretien",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF2C2C2C)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -288,18 +295,18 @@ fun DetailsScreen(
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     letterSpacing = 2.sp,
-                    color = Color(0xFF2C2C2C)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
-                ){
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_separator),
                         contentDescription = null,
-                        tint = Color(0xFFB8956A),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -345,13 +352,13 @@ fun ServiceItem(service: ServiceInfo) {
         Icon(
             painter = painterResource(service.icon),
             contentDescription = null,
-            tint = Color(0xFF757575),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             modifier = Modifier.size(24.dp)
         )
         Text(
             text = service.text,
             fontSize = 14.sp,
-            color = Color(0xFF757575)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
     }
 }

@@ -7,15 +7,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -52,7 +51,7 @@ fun FavoritesScreen(navController: NavHostController) {
                         "Favoris",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 },
                 actions = {
@@ -62,12 +61,12 @@ fun FavoritesScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(R.drawable.ic_shopping_bag),
                             contentDescription = "Cart",
-                            tint = Color(0xFF8B7355)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -83,7 +82,7 @@ fun FavoritesScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -116,16 +115,21 @@ fun FavoriteItemCard(
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             // Replace with: Image(painter = painterResource(item.imageRes), ...)
-            Text(
-                "Product Image",
-                fontSize = 10.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Home,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -146,7 +150,7 @@ fun FavoriteItemCard(
                         text = item.name,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFF2C2C2C),
+                        color = MaterialTheme.colorScheme.onBackground,
                         letterSpacing = 0.5.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -154,7 +158,7 @@ fun FavoriteItemCard(
                         text = item.price,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = Color(0xFFB8956A)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -165,7 +169,7 @@ fun FavoriteItemCard(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Remove",
-                        tint = Color(0xFF999999),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         modifier = Modifier.size(20.dp)
                     )
                 }
