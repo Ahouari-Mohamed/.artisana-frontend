@@ -153,11 +153,13 @@ fun DetailsScreen(
                     }
                 }
                 else -> {
+                    // Success state - Show product details
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
+                        // Main Product Image
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -171,6 +173,7 @@ fun DetailsScreen(
                                 contentScale = ContentScale.Crop
                             )
 
+                            // Favorite button - uses live data
                             IconButton(
                                 onClick = { viewModel.toggleFavorite(product.id) },
                                 modifier = Modifier
@@ -185,6 +188,7 @@ fun DetailsScreen(
                             }
                         }
 
+                        // Image Thumbnails
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -205,13 +209,12 @@ fun DetailsScreen(
                                         .clickable { selectedImageIndex = index },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Image(
-                                        painter = painterResource(product.imageRes),
+                                    Icon(
+                                        Icons.Outlined.Home,
                                         contentDescription = null,
-                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
-                                        contentScale = ContentScale.Crop
+                                        tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                                        modifier = Modifier.size(30.dp)
                                     )
-
                                 }
                             }
                         }
