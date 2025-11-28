@@ -209,12 +209,21 @@ fun DetailsScreen(
                                         .clickable { selectedImageIndex = index },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        Icons.Outlined.Home,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
-                                        modifier = Modifier.size(30.dp)
-                                    )
+                                    if (index == 0) {
+                                        Image(
+                                            painter = painterResource(product.imageRes),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Icon(
+                                            Icons.Outlined.Home,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
+                                            modifier = Modifier.size(30.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.SideEffect
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -67,6 +69,13 @@ fun ArtisanaTheme(
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = !darkTheme
+        )
     }
 
     CompositionLocalProvider(LocalThemeState provides themeState) {
