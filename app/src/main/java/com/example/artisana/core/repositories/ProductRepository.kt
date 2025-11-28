@@ -71,13 +71,13 @@ class StaticProductRepository private constructor() : ProductRepository {
     )
 
     override suspend fun getProducts(): List<Product> {
-        delay(500) // Simulate network delay
+        delay(500)
 
         return products.toList()
     }
 
     override suspend fun toggleFavorite(productId: Int): Product? {
-        delay(100) // Simulate network delay
+        delay(100) // Simulate network delay// Simulate network delay
 
         val index = products.indexOfFirst { it.id == productId }
         if (index != -1) {

@@ -153,13 +153,11 @@ fun DetailsScreen(
                     }
                 }
                 else -> {
-                    // Success state - Show product details
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
-                        // Main Product Image
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -173,7 +171,6 @@ fun DetailsScreen(
                                 contentScale = ContentScale.Crop
                             )
 
-                            // Favorite button - uses live data
                             IconButton(
                                 onClick = { viewModel.toggleFavorite(product.id) },
                                 modifier = Modifier
@@ -188,7 +185,6 @@ fun DetailsScreen(
                             }
                         }
 
-                        // Image Thumbnails
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -209,12 +205,13 @@ fun DetailsScreen(
                                         .clickable { selectedImageIndex = index },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        Icons.Outlined.Home,
+                                    Image(
+                                        painter = painterResource(product.imageRes),
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
-                                        modifier = Modifier.size(30.dp)
+                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
                                     )
+
                                 }
                             }
                         }
