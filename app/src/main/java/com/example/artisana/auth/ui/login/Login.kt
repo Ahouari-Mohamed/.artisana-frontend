@@ -19,16 +19,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
+import com.example.artisana.auth.viewmodels.LoginViewModel
 import com.example.artisana.core.navigation.Screen
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
+fun LoginScreen(
+    navController: NavHostController,
+    viewModel: LoginViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Handle successful login
+    LaunchedEffect(uiState.isLoginSuccessful) {
+        if (uiState.isLoginSuccessful) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+            viewModel.resetLoginState()
+        }
+    }
+
+    // Show error message if any
+    if (uiState.errorMessage.isNotEmpty()) {
+        LaunchedEffect(uiState.errorMessage) {
+            // You can show a Snackbar here if needed
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearErrorMessage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -72,11 +96,8 @@ fun LoginScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = ""
-                },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 placeholder = {
                     Text(
                         text = "YourAdresse@example.com",
@@ -87,8 +108,8 @@ fun LoginScreen(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
@@ -96,6 +117,7 @@ fun LoginScreen(navController: NavHostController) {
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
+                enabled = !uiState.isLoading
             )
 
             // Error message with fixed height to prevent layout shift
@@ -105,9 +127,9 @@ fun LoginScreen(navController: NavHostController) {
                     .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (emailError.isNotEmpty()) {
+                if (uiState.emailError.isNotEmpty()) {
                     Text(
-                        text = emailError,
+                        text = uiState.emailError,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 11.sp,
                         lineHeight = 14.sp
@@ -128,14 +150,11 @@ fun LoginScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = ""
-                },
+                value = uiState.password,
+                onValueChange = { viewModel.onPasswordChange(it) },
                 placeholder = {
                     Text(
-                        text = "Au moins 8 caractères",
+                        text = "Entrer votre mot de passe",
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         fontSize = 12.sp
                     )
@@ -143,8 +162,8 @@ fun LoginScreen(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
@@ -153,6 +172,7 @@ fun LoginScreen(navController: NavHostController) {
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
+                enabled = !uiState.isLoading
             )
 
             // Error message with fixed height
@@ -162,9 +182,9 @@ fun LoginScreen(navController: NavHostController) {
                     .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (passwordError.isNotEmpty()) {
+                if (uiState.passwordError.isNotEmpty()) {
                     Text(
-                        text = passwordError,
+                        text = uiState.passwordError,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 11.sp,
                         lineHeight = 14.sp
@@ -187,13 +207,10 @@ fun LoginScreen(navController: NavHostController) {
                 .padding(end = 4.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null
+                    indication = null,
+                    enabled = !uiState.isLoading
                 ) {
-                    navController.navigate(Screen.ForgotPassword.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
+                    navController.navigate(Screen.ForgotPassword.route)
                 }
         )
 
@@ -201,44 +218,39 @@ fun LoginScreen(navController: NavHostController) {
 
         // Login button
         Button(
-            onClick = {
-                var isValid = true
-
-//                if (email.isBlank()) {
-//                    emailError = "Veuillez entrer votre email"
-//                    isValid = false
-//                } else {
-//                    emailError = ""
-//                }
-//
-//                if (password.isBlank()) {
-//                    passwordError = "Veuillez entrer votre mot de passe"
-//                    isValid = false
-//                } else {
-//                    passwordError = ""
-//                }
-
-                if (isValid) {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                }
-            },
+            onClick = { viewModel.onLoginClick() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
-            )
+            ),
+            enabled = !uiState.isLoading
         ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(
+                    text = "Se connecter",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
+
+        // Error message display
+        if (uiState.errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Se connecter",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onPrimary
+                text = uiState.errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
@@ -290,7 +302,8 @@ fun LoginScreen(navController: NavHostController) {
                 modifier = Modifier
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+                        indication = null,
+                        enabled = !uiState.isLoading
                     ) {
                         navController.navigate(Screen.Register.route) {
                             popUpTo(navController.graph.id) {

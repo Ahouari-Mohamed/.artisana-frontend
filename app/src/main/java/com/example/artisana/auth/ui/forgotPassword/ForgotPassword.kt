@@ -19,29 +19,33 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.artisana.R
+import com.example.artisana.auth.viewmodels.ForgotPasswordViewModel
 import com.example.artisana.core.navigation.Screen
 
-fun isValidPassword(password: String): Boolean {
-    val hasMinLength = password.length >= 8
-    val hasLetter = password.any { it.isLetter() }
-    val hasDigit = password.any { it.isDigit() }
-    val hasSpecialChar = password.any { !it.isLetterOrDigit() }
-
-    return hasMinLength && hasLetter && hasDigit && hasSpecialChar
-}
-
 @Composable
-fun ForgotPasswordScreen(navController: NavHostController) {
+fun ForgotPasswordScreen(
+    navController: NavHostController,
+    viewModel: ForgotPasswordViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    var email by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
+    // Handle successful password reset
+    LaunchedEffect(uiState.isResetSuccessful) {
+        if (uiState.isResetSuccessful) {
+            navController.navigate(Screen.SuccessPass.route)
+            viewModel.resetPasswordState()
+        }
+    }
 
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-
-    var passwordError by remember { mutableStateOf("") }
-    var confirmPasswordError by remember { mutableStateOf("") }
+    // Show error message if any
+    if (uiState.errorMessage.isNotEmpty()) {
+        LaunchedEffect(uiState.errorMessage) {
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearErrorMessage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -59,7 +63,8 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                     color = MaterialTheme.colorScheme.primary,
                     shape = CircleShape
                 )
-                .clip(CircleShape)
+                .clip(CircleShape),
+            enabled = !uiState.isLoading
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_return),
@@ -109,11 +114,8 @@ fun ForgotPasswordScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = ""
-                },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 placeholder = {
                     Text(
                         text = "YourAdresse@example.com",
@@ -124,26 +126,26 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
-                isError = emailError.isNotEmpty()
+                isError = uiState.emailError.isNotEmpty(),
+                enabled = !uiState.isLoading
             )
 
-            // Fixed height error space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (emailError.isNotEmpty()) {
+                if (uiState.emailError.isNotEmpty()) {
                     Text(
-                        text = emailError,
+                        text = uiState.emailError,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.error,
                         lineHeight = 14.sp
@@ -151,6 +153,8 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Password field
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -165,11 +169,8 @@ fun ForgotPasswordScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = ""
-                },
+                value = uiState.password,
+                onValueChange = { viewModel.onPasswordChange(it) },
                 placeholder = {
                     Text(
                         text = "Votre mot de passe",
@@ -182,26 +183,26 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
-                isError = passwordError.isNotEmpty()
+                isError = uiState.passwordError.isNotEmpty(),
+                enabled = !uiState.isLoading
             )
 
-            // Fixed height error space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(32.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (passwordError.isNotEmpty()) {
+                if (uiState.passwordError.isNotEmpty()) {
                     Text(
-                        text = passwordError,
+                        text = uiState.passwordError,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 10.sp,
                         lineHeight = 13.sp
@@ -223,11 +224,8 @@ fun ForgotPasswordScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    confirmPassword = it
-                    confirmPasswordError = ""
-                },
+                value = uiState.confirmPassword,
+                onValueChange = { viewModel.onConfirmPasswordChange(it) },
                 placeholder = {
                     Text(
                         text = "Répéter votre mot de passe",
@@ -240,26 +238,26 @@ fun ForgotPasswordScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
-                isError = confirmPasswordError.isNotEmpty()
+                isError = uiState.confirmPasswordError.isNotEmpty(),
+                enabled = !uiState.isLoading
             )
 
-            // Fixed height error space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(32.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (confirmPasswordError.isNotEmpty()) {
+                if (uiState.confirmPasswordError.isNotEmpty()) {
                     Text(
-                        text = confirmPasswordError,
+                        text = uiState.confirmPasswordError,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 10.sp,
                         lineHeight = 13.sp
@@ -271,45 +269,38 @@ fun ForgotPasswordScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = {
-                var valid = true
-
-//                if (email.isBlank()) {
-//                    emailError = "Veuillez entrer votre email"
-//                    valid = false
-//                }
-//
-//                if (password.isBlank()) {
-//                    passwordError = "Veuillez entrer un mot de passe"
-//                    valid = false
-//                } else if (!isValidPassword(password)) {
-//                    passwordError = "8 caractères min, lettres, chiffres et symboles"
-//                    valid = false
-//                }
-//
-//                if (confirmPassword.isBlank()) {
-//                    confirmPasswordError = "Confirmez votre mot de passe"
-//                    valid = false
-//                } else if (password != confirmPassword) {
-//                    confirmPasswordError = "Les mots de passe ne correspondent pas"
-//                    valid = false
-//                }
-
-                if (valid) {
-                    navController.navigate(Screen.SuccessPass.route)
-                }
-            },
+            onClick = { viewModel.onResetPasswordClick() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            enabled = !uiState.isLoading
         ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(
+                    text = "Réinitialiser",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
+
+        // Error message display
+        if (uiState.errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Réinitialiser",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onPrimary
+                text = uiState.errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

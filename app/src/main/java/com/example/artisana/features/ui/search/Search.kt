@@ -25,24 +25,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.core.composables.currentRoute
 import com.example.artisana.core.navigation.Screen
-
-data class SearchProduct(
-    val id: String,
-    val name: String,
-    val price: String,
-    val imageRes: Int,
-    var quantity: Int = 1
-)
+import com.example.artisana.core.viewmodels.ProductViewModel
+import com.example.artisana.core.viewmodels.ProductViewModelFactory
+import com.example.artisana.features.composables.ResultCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navController: NavHostController) {
+fun SearchScreen(
+    navController: NavHostController,
+    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+) {
     val scrollState = rememberScrollState()
+    val state by viewModel.state.collectAsState()
+
     var searchQuery by remember { mutableStateOf("") }
     var showRecentSearches by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -52,21 +53,23 @@ fun SearchScreen(navController: NavHostController) {
             "Pofa",
             "Pendant",
             "Brass",
-            "Cushion",
-            "Table"
         )
     }
 
-    val searchResults = remember {
-        mutableStateListOf(
-            SearchProduct("2", "POFA", "MAD 260", 0, 1),
-            SearchProduct("3", "BRASS PENDANT", "MAD 760", 0, 1),
-            SearchProduct("1", "BRASS PENDANT", "MAD 890", 0, 1)
-        )
+    // Filter products based on search query
+    val searchResults = remember(state.products, searchQuery) {
+        if (searchQuery.isBlank()) {
+            state.products
+        } else {
+            state.products.filter { product ->
+                product.name.contains(searchQuery, ignoreCase = true) ||
+                        product.description.contains(searchQuery, ignoreCase = true)
+            }
+        }
     }
 
     // Filtered recent searches based on searchQuery
-    val filteredRecentSearches = remember(searchQuery, recentSearches) {
+    val filteredRecentSearches = remember(searchQuery, recentSearches.toList()) {
         if (searchQuery.isBlank()) {
             recentSearches
         } else {
@@ -88,6 +91,9 @@ fun SearchScreen(navController: NavHostController) {
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
+                },
+                navigationIcon = {
+                    Spacer(modifier = Modifier.size(48.dp))
                 },
                 actions = {
                     IconButton(onClick = {
@@ -118,133 +124,206 @@ fun SearchScreen(navController: NavHostController) {
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // 1. Base Content (Search Bar and Results)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 15.dp),
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Search Bar
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-                            showRecentSearches = true
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(focusRequester)
-                            .onFocusChanged { focusState ->
-                                showRecentSearches = focusState.isFocused || searchQuery.isNotEmpty()
-                            },
-                        placeholder = {
-                            Text(
-                                "Search",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                fontSize = 16.sp
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Search,
-                                contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.outline,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        shape = RoundedCornerShape(8.dp),
-                        singleLine = true,
-                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
-                            onSearch = { showRecentSearches = false }
-                        )
-                    )
-
-                    // Filter Icon
-                    IconButton(
-                        onClick = { /* Filter action */ },
-                        modifier = Modifier
-                            .size(48.dp)
+            when {
+                state.isLoading -> {
+                    // Loading state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_filter),
-                            contentDescription = "Filter",
-                            tint = MaterialTheme.colorScheme.primary
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Results Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Résultat pour \"$searchQuery\"",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "${searchResults.count().toString().replace(" ", "").trim()} résultats",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Search Results
-                searchResults.forEach { product ->
-                    SearchResultCard(
-                        product = product,
-                        onRemove = {
-                            searchResults.remove(product)
+                state.error != null -> {
+                    // Error state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = state.error ?: "Unknown error",
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.Center
+                            )
+                            Button(
+                                onClick = { viewModel.loadProducts() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text("Retry")
+                            }
                         }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
-            }
+                else -> {
+                    // Success state - Base Content (Search Bar and Results)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(horizontal = 15.dp),
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Recent Searches Overlay (Higher Z-index)
-            if (showRecentSearches && filteredRecentSearches.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp + 48.dp + 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    RecentSearchesContent(
-                        recentSearches = filteredRecentSearches,
-                        onSearchClick = { search ->
-                            searchQuery = search
-                            showRecentSearches = false
-                        },
-                        onClearAll = {
-                            recentSearches.clear()
-                            showRecentSearches = false
-                            searchQuery = ""
-                        },
-                        onRemoveSearch = { search ->
-                            recentSearches.remove(search)
+                        // Search Bar
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        ) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    searchQuery = it
+                                    showRecentSearches = true
+                                    // Add to recent searches when user types and presses enter
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged { focusState ->
+                                        showRecentSearches =
+                                            focusState.isFocused || searchQuery.isNotEmpty()
+                                    },
+                                placeholder = {
+                                    Text(
+                                        "Search",
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                        fontSize = 16.sp
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Search,
+                                        contentDescription = "Search",
+                                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    )
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                singleLine = true,
+                                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                                    onSearch = {
+                                        showRecentSearches = false
+                                        // Add to recent searches
+                                        if (searchQuery.isNotBlank() && !recentSearches.contains(
+                                                searchQuery
+                                            )
+                                        ) {
+                                            recentSearches.add(0, searchQuery)
+                                            if (recentSearches.size > 10) {
+                                                recentSearches.removeAt(recentSearches.size - 1)
+                                            }
+                                        }
+                                    }
+                                )
+                            )
+
+                            // Filter Icon
+                            IconButton(
+                                onClick = { /* Filter action */ },
+                                modifier = Modifier
+                                    .size(48.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_filter),
+                                    contentDescription = "Filter",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
-                    )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Results Header
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (searchQuery.isBlank()) "Tous les produits" else "Résultat pour \"$searchQuery\"",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Text(
+                                text = "${searchResults.size} résultats",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Search Results
+                        if (searchResults.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Aucun produit trouvé",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    fontSize = 16.sp
+                                )
+                            }
+                        } else {
+                            searchResults.forEach { product ->
+                                ResultCard(
+                                    product = product,
+                                    page = "Search",
+                                    onClick = {
+                                        navController.navigate(
+                                            Screen.Details.createRoute(productId = product.id.toString())
+                                        )
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                    }
+
+                    // Recent Searches Overlay (Higher Z-index)
+                    if (showRecentSearches && filteredRecentSearches.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp + 48.dp + 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            RecentSearchesContent(
+                                recentSearches = filteredRecentSearches,
+                                onSearchClick = { search ->
+                                    searchQuery = search
+                                    showRecentSearches = false
+                                },
+                                onClearAll = {
+                                    recentSearches.clear()
+                                    showRecentSearches = false
+                                    searchQuery = ""
+                                },
+                                onRemoveSearch = { search ->
+                                    recentSearches.remove(search)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -269,7 +348,7 @@ fun RecentSearchesContent(
                 spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surface)
             .heightIn(max = 225.dp)
             .padding(top = 12.dp, bottom = 12.dp, start = 20.dp, end = 12.dp),
     ) {
@@ -342,84 +421,6 @@ fun RecentSearchesContent(
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SearchResultCard(
-    product: SearchProduct,
-    onRemove: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-    ) {
-        // Product Image
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            // Replace with: Image(painter = painterResource(product.imageRes), ...)
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.Outlined.Home,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
-                    modifier = Modifier.size(48.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        // Product Details
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = product.name,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        letterSpacing = 0.5.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = product.price,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    onClick = onRemove,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Remove",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                        modifier = Modifier.size(20.dp)
-                    )
                 }
             }
         }

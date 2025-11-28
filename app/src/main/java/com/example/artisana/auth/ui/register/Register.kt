@@ -21,25 +21,35 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
+import com.example.artisana.auth.viewmodels.RegisterViewModel
+import com.example.artisana.auth.viewmodels.RegistrationStep
 import com.example.artisana.core.navigation.Screen
 
-// Email validation function
-fun isValidEmail(email: String): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-}
-
 @Composable
-fun RegisterScreen(navController: NavHostController) {
-    var name by remember { mutableStateOf("") }
-    var prenom by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var checked by remember { mutableStateOf(false) }
+fun RegisterScreen(
+    navController: NavHostController,
+    viewModel: RegisterViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    var emailError by remember { mutableStateOf("") }
-    var nameError by remember { mutableStateOf("") }
-    var prenomError by remember { mutableStateOf("") }
+    // Navigate to CreatePassword screen when validation passes
+    LaunchedEffect(uiState.registrationStep) {
+        if (uiState.registrationStep == RegistrationStep.PASSWORD) {
+            navController.navigate(Screen.CreatePassword.route)
+            viewModel.goBackToInfoStep() // Reset for next time
+        }
+    }
+
+    // Show error message if any
+    if (uiState.errorMessage.isNotEmpty()) {
+        LaunchedEffect(uiState.errorMessage) {
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearErrorMessage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -105,11 +115,8 @@ fun RegisterScreen(navController: NavHostController) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                        nameError = ""
-                    },
+                    value = uiState.name,
+                    onValueChange = { viewModel.onNameChange(it) },
                     placeholder = {
                         Text(
                             "Nom",
@@ -119,26 +126,26 @@ fun RegisterScreen(navController: NavHostController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = if (nameError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                        unfocusedBorderColor = if (nameError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                        focusedBorderColor = if (uiState.nameError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                        unfocusedBorderColor = if (uiState.nameError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
-                    isError = nameError.isNotEmpty()
+                    isError = uiState.nameError.isNotEmpty(),
+                    enabled = !uiState.isLoading
                 )
 
-                // Fixed height error space
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(16.dp)
                         .padding(start = 4.dp, top = 2.dp)
                 ) {
-                    if (nameError.isNotEmpty()) {
+                    if (uiState.nameError.isNotEmpty()) {
                         Text(
-                            text = nameError,
+                            text = uiState.nameError,
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.error,
                             lineHeight = 12.sp
@@ -149,11 +156,8 @@ fun RegisterScreen(navController: NavHostController) {
 
             Column(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
-                    value = prenom,
-                    onValueChange = {
-                        prenom = it
-                        prenomError = ""
-                    },
+                    value = uiState.prenom,
+                    onValueChange = { viewModel.onPrenomChange(it) },
                     placeholder = {
                         Text(
                             "Prénom",
@@ -163,26 +167,26 @@ fun RegisterScreen(navController: NavHostController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = if (prenomError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                        unfocusedBorderColor = if (prenomError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                        focusedBorderColor = if (uiState.prenomError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                        unfocusedBorderColor = if (uiState.prenomError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                     ),
-                    isError = prenomError.isNotEmpty()
+                    isError = uiState.prenomError.isNotEmpty(),
+                    enabled = !uiState.isLoading
                 )
 
-                // Fixed height error space
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(16.dp)
                         .padding(start = 4.dp, top = 2.dp)
                 ) {
-                    if (prenomError.isNotEmpty()) {
+                    if (uiState.prenomError.isNotEmpty()) {
                         Text(
-                            text = prenomError,
+                            text = uiState.prenomError,
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.error,
                             lineHeight = 12.sp
@@ -202,13 +206,9 @@ fun RegisterScreen(navController: NavHostController) {
                     .padding(vertical = 4.dp)
             )
 
-            // email
             OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = ""
-                },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChange(it) },
                 placeholder = {
                     Text(
                         text = "YourAdresse@example.com",
@@ -219,26 +219,26 @@ fun RegisterScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-                    unfocusedBorderColor = if (emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    focusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+                    unfocusedBorderColor = if (uiState.emailError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
-                isError = emailError.isNotEmpty()
+                isError = uiState.emailError.isNotEmpty(),
+                enabled = !uiState.isLoading
             )
 
-            // Fixed height error space
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(20.dp)
                     .padding(start = 8.dp, top = 4.dp)
             ) {
-                if (emailError.isNotEmpty()) {
+                if (uiState.emailError.isNotEmpty()) {
                     Text(
-                        text = emailError,
+                        text = uiState.emailError,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.error,
                         lineHeight = 14.sp
@@ -253,28 +253,53 @@ fun RegisterScreen(navController: NavHostController) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 4.dp)
         ) {
             Checkbox(
-                checked = checked,
-                onCheckedChange = { checked = it },
+                checked = uiState.termsAccepted,
+                onCheckedChange = { viewModel.onTermsAcceptedChange(it) },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
                     uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
+                ),
+                enabled = !uiState.isLoading
             )
             Text(
                 text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Normal)) {
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
                         append("J'ai lu et j'accepte ")
                     }
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Normal)) {
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
                         append("les conditions d'utilisation")
                     }
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Normal)) {
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
                         append(" et ")
                     }
-                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Normal)) {
+                    withStyle(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    ) {
                         append("la politique de confidentialité.")
                     }
                 },
@@ -283,49 +308,58 @@ fun RegisterScreen(navController: NavHostController) {
                 textAlign = TextAlign.Start
             )
         }
+        if (!uiState.termsAccepted) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+                    .padding(start = 16.dp)
+            ) {
+                Text(
+                    text = "Veuillez accepter les conditions d'utilisation",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.error,
+                    lineHeight = 14.sp
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Register button
         Button(
-            onClick = {
-                var valid = true
-
-//                if (name.isBlank()) {
-//                    nameError = "Entrez votre nom"
-//                    valid = false
-//                }
-//                if (prenom.isBlank()) {
-//                    prenomError = "Entrez votre prénom"
-//                    valid = false
-//                }
-//                if (email.isBlank()) {
-//                    emailError = "Veuillez entrer votre email"
-//                    valid = false
-//                } else if (!isValidEmail(email)) {
-//                    emailError = "Format d'email invalide"
-//                    valid = false
-//                }
-//                if (!checked) {
-//                    valid = false
-//                }
-
-                if (valid) {
-                    navController.navigate(Screen.CreatePassword.route)
-                }
-            },
+            onClick = { viewModel.onNextStepClick() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            enabled = !uiState.isLoading
         ) {
-            Text("S'inscrire", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary)
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("S'inscrire", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary)
+            }
+        }
+
+        // Error message display
+        if (uiState.errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = uiState.errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         Spacer(modifier = Modifier.weight(.8f))
 
-        // Go back to login
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -356,14 +390,14 @@ fun RegisterScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Vous avez déjà un compte?",
+                text = "Vous avez déjà un compte? ",
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = " Se Connecter",
+                text = "Se Connecter",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary,
@@ -371,7 +405,8 @@ fun RegisterScreen(navController: NavHostController) {
                 modifier = Modifier
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+                        indication = null,
+                        enabled = !uiState.isLoading
                     ) {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.id) {
