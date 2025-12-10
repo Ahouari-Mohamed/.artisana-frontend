@@ -5,7 +5,8 @@ data class Product(
     val name: String,
     val description: String,
     val price: String,
-    val imageRes: Int,
+    val imageRes: List<String>,
+    val stock: Int = 0,
     val isFavorite: Boolean = false,
     val isOnCart: Boolean = false,
     val quantity: Int = 0

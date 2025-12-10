@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,16 +17,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.SubcomposeAsyncImage
 import com.example.artisana.core.models.Product
 import com.example.artisana.core.viewmodels.ProductViewModel
 import com.example.artisana.core.viewmodels.ProductViewModelFactory
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.shimmer
 
 @Composable
 fun ResultCard(
@@ -49,11 +55,33 @@ fun ResultCard(
                 .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(product.imageRes),
+            SubcomposeAsyncImage(
+                model = product.imageRes[0],
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .placeholder(
+                                visible = true,
+                                shape = RectangleShape,
+                                color = MaterialTheme.colorScheme.background,
+                                highlight = PlaceholderHighlight.shimmer(
+                                    highlightColor = Color.White.copy(alpha = 0.7f),
+                                ),
+                            )
+                    )
+                },
+                error = {
+                    // Optional: Show an icon if the URL fails to load
+                    Image(
+                        imageVector = Icons.Filled.Build,
+                        contentDescription = "Error",
+                        modifier = Modifier.size(100.dp)
+                    )
+                }
             )
         }
 
@@ -73,7 +101,7 @@ fun ResultCard(
             ) {
                 Column(
                     modifier = Modifier.weight(1f)
-                ){
+                ) {
                     Text(
                         text = product.name,
                         fontSize = 14.sp,
@@ -128,7 +156,7 @@ fun ResultCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if(page == "Cart"){
+            if (page == "Cart") {
                 // Quantity Controls
                 Row(
                     modifier = Modifier.fillMaxWidth(),

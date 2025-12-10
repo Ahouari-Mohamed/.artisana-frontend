@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,11 +31,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.SubcomposeAsyncImage
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
 import com.example.artisana.R
 import com.example.artisana.home.composables.ProductCard
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.viewmodels.ProductViewModel
 import com.example.artisana.core.viewmodels.ProductViewModelFactory
+import com.google.accompanist.placeholder.shimmer
 
 data class ServiceInfo(
     val icon: Int,
@@ -166,11 +171,33 @@ fun DetailsScreen(
                                 .height(380.dp)
                                 .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
                         ) {
-                            Image(
-                                painter = painterResource(product.imageRes),
+                            SubcomposeAsyncImage(
+                                model = product.imageRes[selectedImageIndex],
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                loading = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .placeholder(
+                                                visible = true,
+                                                shape = RectangleShape,
+                                                color = MaterialTheme.colorScheme.background,
+                                                highlight = PlaceholderHighlight.shimmer(
+                                                    highlightColor = Color.White.copy(alpha = 0.7f),
+                                                ),
+                                            )
+                                    )
+                                },
+                                error = {
+                                    // Optional: Show an icon if the URL fails to load
+                                    Image(
+                                        imageVector = Icons.Filled.Build,
+                                        contentDescription = "Error",
+                                        modifier = Modifier.size(100.dp)
+                                    )
+                                }
                             )
 
                             // Favorite button - uses live data
@@ -209,21 +236,34 @@ fun DetailsScreen(
                                         .clickable { selectedImageIndex = index },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (index == 0) {
-                                        Image(
-                                            painter = painterResource(product.imageRes),
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    } else {
-                                        Icon(
-                                            Icons.Outlined.Home,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onBackground.copy(0.5f),
-                                            modifier = Modifier.size(30.dp)
-                                        )
-                                    }
+                                    SubcomposeAsyncImage(
+                                        model = product.imageRes[index],
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                        loading = {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .placeholder(
+                                                        visible = true,
+                                                        shape = RectangleShape,
+                                                        color = MaterialTheme.colorScheme.background,
+                                                        highlight = PlaceholderHighlight.shimmer(
+                                                            highlightColor = Color.White.copy(alpha = 0.7f),
+                                                        ),
+                                                    )
+                                            )
+                                        },
+                                        error = {
+                                            // Optional: Show an icon if the URL fails to load
+                                            Image(
+                                                imageVector = Icons.Filled.Build,
+                                                contentDescription = "Error",
+                                                modifier = Modifier.size(100.dp)
+                                            )
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -237,7 +277,6 @@ fun DetailsScreen(
                             // Product Name and Stock
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = product.name,
@@ -246,12 +285,20 @@ fun DetailsScreen(
                                     color = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Text(
-                                    text = "(in Stock)",
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                if (product.stock > 0) {
+                                    Text(
+                                        text = "En Stock",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    Text(
+                                        text = "En rupture",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))

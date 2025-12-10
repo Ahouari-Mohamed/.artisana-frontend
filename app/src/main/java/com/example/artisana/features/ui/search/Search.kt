@@ -348,7 +348,7 @@ fun RecentSearchesContent(
                 spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.background)
             .heightIn(max = 225.dp)
             .padding(top = 12.dp, bottom = 12.dp, start = 20.dp, end = 12.dp),
     ) {
