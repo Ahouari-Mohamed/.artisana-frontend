@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817936200274",
+    "project_id": "artisana-e4123",
+    "storage_bucket": "artisana-e4123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817936200274:android:6250e91a4c49040f31658b",
+        "android_client_info": {
+          "package_name": "com.example.artisana"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZZ6XqtDA92DhnTpjxyuuQVshhR1py_Eg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

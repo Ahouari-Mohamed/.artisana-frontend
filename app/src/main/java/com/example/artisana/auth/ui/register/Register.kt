@@ -30,16 +30,19 @@ import com.example.artisana.core.navigation.Screen
 
 @Composable
 fun RegisterScreen(
-    navController: NavHostController,
-    viewModel: RegisterViewModel = viewModel()
+    navController: NavHostController
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val registerBackStackEntry = remember(navController.currentBackStackEntry) {
+        navController.getBackStackEntry(Screen.Register.route)
+    }
+    val viewModel: RegisterViewModel = viewModel(registerBackStackEntry)
 
+    val uiState by viewModel.uiState.collectAsState()
     // Navigate to CreatePassword screen when validation passes
     LaunchedEffect(uiState.registrationStep) {
         if (uiState.registrationStep == RegistrationStep.PASSWORD) {
             navController.navigate(Screen.CreatePassword.route)
-            viewModel.goBackToInfoStep() // Reset for next time
+            viewModel.goBackToInfoStep()
         }
     }
 
@@ -273,7 +276,7 @@ fun RegisterScreen(
                             fontWeight = FontWeight.Normal
                         )
                     ) {
-                        append("J'ai lu et j'accepte ")
+                        append("J\'ai lu et j\'accepte ")
                     }
                     withStyle(
                         SpanStyle(
@@ -282,7 +285,7 @@ fun RegisterScreen(
                             fontWeight = FontWeight.Normal
                         )
                     ) {
-                        append("les conditions d'utilisation")
+                        append("les conditions d\'utilisation")
                     }
                     withStyle(
                         SpanStyle(
@@ -316,7 +319,7 @@ fun RegisterScreen(
                     .padding(start = 16.dp)
             ) {
                 Text(
-                    text = "Veuillez accepter les conditions d'utilisation",
+                    text = "Veuillez accepter les conditions d\'utilisation",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.error,
                     lineHeight = 14.sp
@@ -342,7 +345,7 @@ fun RegisterScreen(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("S'inscrire", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary)
+                Text("S\'inscrire", fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
 

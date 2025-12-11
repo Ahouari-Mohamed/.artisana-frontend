@@ -20,7 +20,8 @@ import com.example.artisana.core.navigation.Screen
 import kotlinx.coroutines.delay
 
 @Composable
-fun WelcomeScreen(navController: NavHostController) {
+fun WelcomeScreen(navController: NavHostController, isLoggedIn: Boolean
+) {
     val brownColor = Color(0xFFB4916C)
 
     // Animated dots
@@ -59,10 +60,17 @@ fun WelcomeScreen(navController: NavHostController) {
     // Navigate after 3 seconds
     LaunchedEffect(Unit) {
         delay(3000)
-        navController.navigate(Screen.Onboarding.route) {
-            popUpTo(Screen.Welcome.route) { inclusive = true }
+        if (isLoggedIn) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Welcome.route) { inclusive = true }
+            }
+        } else {
+            navController.navigate(Screen.Onboarding.route) {
+                popUpTo(Screen.Welcome.route) { inclusive = true }
+            }
         }
     }
+
 
     Box(
         modifier = Modifier.fillMaxSize(),

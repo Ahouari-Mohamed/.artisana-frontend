@@ -2,6 +2,10 @@ package com.example.artisana.auth.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.artisana.core.repositories.AuthError
+import com.example.artisana.core.repositories.AuthRepository
+import com.example.artisana.core.repositories.AuthResult
+import com.example.artisana.core.repositories.EmailCheckResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,12 +30,8 @@ data class RegisterUiState(
     val errorMessage: String = ""
 )
 
-enum class RegistrationStep {
-    INFO,      // Name, prenom, email
-    PASSWORD   // Password creation
-}
-
 class RegisterViewModel : ViewModel() {
+    private val authRepository = AuthRepository()
 
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
@@ -61,46 +61,98 @@ class RegisterViewModel : ViewModel() {
     }
 
     fun onNextStepClick() {
-        if (!validateInfoStep()) {
-            return
-        }
-        _uiState.update { it.copy(registrationStep = RegistrationStep.PASSWORD) }
-    }
-
-    fun onRegisterClick() {
-        if (!validatePasswordStep()) {
-            return
-        }
+        if (!validateInfoStep()) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = "") }
+            _uiState.update { it.copy(isLoading = true, errorMessage = "", emailError = "") }
 
-            try {
-                // Implement actual registration logic here
-                // Example: authRepository.register(name, prenom, email, password)
+            val email = _uiState.value.email.trim()
 
-                // Simulate API call
-                kotlinx.coroutines.delay(1000)
-
-                // On success
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isRegistrationSuccessful = true
-                    )
+            when (val result = authRepository.checkEmail(email)) {
+                is EmailCheckResult.Exists -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            emailError = "Un compte existe déjà avec cette adresse e-mail."
+                        )
+                    }
                 }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = "Échec de l'inscription. Veuillez réessayer."
-                    )
+                is EmailCheckResult.NotExist -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            registrationStep = RegistrationStep.PASSWORD
+                        )
+                    }
+                }
+                is EmailCheckResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Erreur lors de la vérification de l'email."
+                        )
+                    }
                 }
             }
         }
     }
+
+    fun onRegisterClick() {
+        if (!validatePasswordStep()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = "", emailError = "", passwordError = "") }
+
+            val state = _uiState.value
+
+            val result = authRepository.signUp(
+                name = state.name,
+                prenom = state.prenom,
+                email = state.email,
+                password = state.password
+            )
+
+            _uiState.update { current ->
+                when (result) {
+                    is AuthResult.Success -> current.copy(
+                        isLoading = false,
+                        isRegistrationSuccessful = true
+                    )
+                    is AuthResult.Error -> {
+                        val emailError =
+                            if (result.error is AuthError.UserCollision)
+                                "Un compte existe déjà avec cette adresse e-mail."
+                            else if (result.error is AuthError.InvalidEmailFormat)
+                                "Format d'email invalide."
+                            else ""
+
+                        val passwordError =
+                            if (result.error is AuthError.WeakPassword)
+                                "Le mot de passe est trop faible."
+                            else ""
+
+                        val generic =
+                            if (emailError.isEmpty() && passwordError.isEmpty())
+                                "Une erreur inattendue est survenue."
+                            else ""
+
+                        current.copy(
+                            isLoading = false,
+                            emailError = emailError,
+                            passwordError = passwordError,
+                            errorMessage = generic,
+
+                            registrationStep = if (result.error is AuthError.UserCollision)
+                                RegistrationStep.INFO
+                            else
+                                current.registrationStep
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun validateInfoStep(): Boolean {
         val currentState = _uiState.value

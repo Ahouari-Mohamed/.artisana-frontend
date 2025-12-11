@@ -3,13 +3,36 @@ package com.example.artisana.features.ui.profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,8 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
+import com.example.artisana.auth.viewmodels.AuthViewModel
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.core.composables.currentRoute
 import com.example.artisana.core.navigation.Screen
@@ -27,12 +52,28 @@ import com.example.artisana.core.theme.LocalThemeState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavHostController) {
+fun ProfileScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel()
+) {
     val scrollState = rememberScrollState()
+    val uiState by profileViewModel.uiState.collectAsState()
+    val isLoggedIn by authViewModel.isUserLoggedIn.collectAsState()
 
     val themeState = LocalThemeState.current
     val isDarkMode = themeState.isDark
     val toggleDarkMode = themeState.toggleDarkTheme
+
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -101,7 +142,7 @@ fun ProfileScreen(navController: NavHostController) {
 
             // User Name
             Text(
-                text = "Ahouari Mohamed",
+                text = uiState.user?.displayName ?: "",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onBackground
@@ -111,7 +152,7 @@ fun ProfileScreen(navController: NavHostController) {
 
             // Email
             Text(
-                text = "youremail@domain.com",
+                text = uiState.user?.email ?: "",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
             )
@@ -195,13 +236,7 @@ fun ProfileScreen(navController: NavHostController) {
 
             // Logout Button
             OutlinedButton(
-                onClick = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
-                    }
-                },
+                onClick = { authViewModel.signOut() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),

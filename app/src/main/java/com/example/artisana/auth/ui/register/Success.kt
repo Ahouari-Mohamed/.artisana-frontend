@@ -26,7 +26,6 @@ fun AccountSuccessScreen(navController: NavHostController) {
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        // Success Icon
         Icon(
             painter = painterResource(id = R.drawable.ic_success_infos),
             contentDescription = "Success Icon",

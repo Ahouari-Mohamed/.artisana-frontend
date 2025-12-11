@@ -2,6 +2,8 @@ package com.example.artisana.auth.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,10 +27,14 @@ class ForgotPasswordViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState.asStateFlow()
 
+    private val firebaseAuth = FirebaseAuth.getInstance()
+
+    /** Update email typed by user */
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email, emailError = "") }
     }
 
+    /** Optionally update password and confirm password if needed */
     fun onPasswordChange(password: String) {
         _uiState.update { it.copy(password = password, passwordError = "") }
     }
@@ -37,87 +43,38 @@ class ForgotPasswordViewModel : ViewModel() {
         _uiState.update { it.copy(confirmPassword = confirmPassword, confirmPasswordError = "") }
     }
 
+    /** Call this when user clicks "Reset Password" */
     fun onResetPasswordClick() {
-        if (!validateInputs()) {
+        val currentState = _uiState.value
+
+        // Validate email first
+        if (currentState.email.isBlank()) {
+            _uiState.update { it.copy(emailError = "Veuillez entrer votre email") }
+            return
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(currentState.email).matches()) {
+            _uiState.update { it.copy(emailError = "Format d'email invalide") }
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = "") }
+            _uiState.update { it.copy(isLoading = true, errorMessage = "", isResetSuccessful = false) }
 
-            try {
-                // Implement actual password reset logic here
-                // Example: authRepository.resetPassword(email, password)
+            firebaseAuth.sendPasswordResetEmail(currentState.email)
+                .addOnCompleteListener { task ->
+                    _uiState.update { it.copy(isLoading = false) }
 
-                // Simulate API call
-                kotlinx.coroutines.delay(1000)
-
-                // On success
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isResetSuccessful = true
-                    )
+                    if (task.isSuccessful) {
+                        _uiState.update { it.copy(isResetSuccessful = true) }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                errorMessage = task.exception?.localizedMessage
+                                    ?: "Échec de la réinitialisation."
+                            )
+                        }
+                    }
                 }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = "Échec de la réinitialisation. Veuillez réessayer."
-                    )
-                }
-            }
         }
-    }
-
-    private fun validateInputs(): Boolean {
-        val currentState = _uiState.value
-        var isValid = true
-
-        if (currentState.email.isBlank()) {
-            _uiState.update { it.copy(emailError = "Veuillez entrer votre email") }
-            isValid = false
-        } else if (!isValidEmail(currentState.email)) {
-            _uiState.update { it.copy(emailError = "Format d'email invalide") }
-            isValid = false
-        }
-
-        if (currentState.password.isBlank()) {
-            _uiState.update { it.copy(passwordError = "Veuillez entrer un mot de passe") }
-            isValid = false
-        } else if (!isValidPassword(currentState.password)) {
-            _uiState.update {
-                it.copy(passwordError = "8 caractères min, lettres, chiffres et symboles")
-            }
-            isValid = false
-        }
-
-        if (currentState.confirmPassword.isBlank()) {
-            _uiState.update { it.copy(confirmPasswordError = "Confirmez votre mot de passe") }
-            isValid = false
-        } else if (currentState.password != currentState.confirmPassword) {
-            _uiState.update {
-                it.copy(confirmPasswordError = "Les mots de passe ne correspondent pas")
-            }
-            isValid = false
-        }
-
-        return isValid
-    }
-
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private fun isValidPassword(password: String): Boolean {
-        val hasMinLength = password.length >= 8
-        val hasLetter = password.any { it.isLetter() }
-        val hasDigit = password.any { it.isDigit() }
-        val hasSpecialChar = password.any { !it.isLetterOrDigit() }
-
-        return hasMinLength && hasLetter && hasDigit && hasSpecialChar
     }
 
     fun resetPasswordState() {
@@ -127,4 +84,27 @@ class ForgotPasswordViewModel : ViewModel() {
     fun clearErrorMessage() {
         _uiState.update { it.copy(errorMessage = "") }
     }
+
+    fun changePassword(oldPassword: String, newPassword: String, onResult: (Boolean, String?) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        val email = user?.email ?: return
+
+        // Re-authenticate
+        val credential = EmailAuthProvider.getCredential(email, oldPassword)
+        user.reauthenticate(credential).addOnCompleteListener { authTask ->
+            if (authTask.isSuccessful) {
+                // Update password
+                user.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                    if (updateTask.isSuccessful) {
+                        onResult(true, null)
+                    } else {
+                        onResult(false, updateTask.exception?.localizedMessage)
+                    }
+                }
+            } else {
+                onResult(false, "Ancien mot de passe incorrect")
+            }
+        }
+    }
+
 }

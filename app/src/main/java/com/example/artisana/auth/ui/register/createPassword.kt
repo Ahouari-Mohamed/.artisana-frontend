@@ -5,6 +5,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,16 +30,23 @@ import com.example.artisana.core.navigation.Screen
 
 @Composable
 fun CreatePasswordScreen(
-    navController: NavHostController,
-    viewModel: RegisterViewModel = viewModel()
+    navController: NavHostController
 ) {
+    val registerBackStackEntry = remember(navController.currentBackStackEntry) {
+        navController.getBackStackEntry(Screen.Register.route)
+    }
+    val viewModel: RegisterViewModel = viewModel(registerBackStackEntry)
+
     val uiState by viewModel.uiState.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     // Handle successful registration
     LaunchedEffect(uiState.isRegistrationSuccessful) {
         if (uiState.isRegistrationSuccessful) {
-            navController.navigate(Screen.SuccessAccount.route)
-            viewModel.resetRegistrationState()
+            navController.navigate(Screen.SuccessAccount.route) {
+                popUpTo(Screen.Register.route) { inclusive = true }
+            }
         }
     }
 
@@ -125,8 +136,17 @@ fun CreatePasswordScreen(
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Cacher le mot de passe" else "Afficher le mot de passe"
+                    IconButton(onClick = {passwordVisible = !passwordVisible}){
+                        Icon(imageVector  = image, description)
+                    }
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = if (uiState.passwordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
@@ -180,8 +200,17 @@ fun CreatePasswordScreen(
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (confirmPasswordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+                    val description = if (confirmPasswordVisible) "Cacher le mot de passe" else "Afficher le mot de passe"
+                    IconButton(onClick = {confirmPasswordVisible = !confirmPasswordVisible}){
+                        Icon(imageVector  = image, description)
+                    }
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = if (uiState.confirmPasswordError.isEmpty()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
@@ -239,10 +268,10 @@ fun CreatePasswordScreen(
         }
 
         // Error message display
-        if (uiState.errorMessage.isNotEmpty()) {
+        if (uiState.emailError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = uiState.errorMessage,
+                text = uiState.emailError,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,

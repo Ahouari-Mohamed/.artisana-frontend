@@ -23,13 +23,13 @@ import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
 
 @Composable
-fun OnboardingScreen(navController: NavHostController) {
+fun OnboardingScreen(navController: NavHostController,) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         // Background Image
         Image(
-            painter = painterResource(R.drawable.img_onboarding_bg), // Replace with your image name
+            painter = painterResource(R.drawable.img_onboarding_bg),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

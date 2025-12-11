@@ -1,6 +1,9 @@
 package com.example.artisana.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,6 +16,8 @@ import com.example.artisana.auth.ui.forgotPassword.PasswordSuccessScreen
 import com.example.artisana.home.ui.details.DetailsScreen
 import com.example.artisana.auth.ui.register.CreatePasswordScreen
 import com.example.artisana.auth.ui.register.AccountSuccessScreen
+import com.example.artisana.auth.viewmodels.AuthViewModel
+import com.example.artisana.auth.viewmodels.ForgotPasswordViewModel
 import com.example.artisana.features.ui.profile.ProfileScreen
 import com.example.artisana.features.ui.cart.CartScreen
 import com.example.artisana.features.ui.favorites.FavoritesScreen
@@ -24,77 +29,89 @@ import com.example.artisana.splash.ui.welcome.WelcomeScreen
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Welcome.route
 ) {
+    val authViewModel: AuthViewModel = viewModel()
+    val isLoggedIn = authViewModel.isUserLoggedIn.collectAsState()
+
+    val startDestination = when (isLoggedIn.value) {
+        true -> Screen.Home.route
+        false -> Screen.Welcome.route
+    }
+
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screen.Welcome.route
     ) {
-        composable(route = Screen.Welcome.route) {
-            WelcomeScreen(navController = navController)
+        composable(Screen.Welcome.route) {
+            val authViewModel: AuthViewModel = viewModel()
+            val isLoggedIn by authViewModel.isUserLoggedIn.collectAsState()
+
+            WelcomeScreen(
+                navController = navController,
+                isLoggedIn = isLoggedIn
+            )
         }
 
+
+
         composable(route = Screen.Onboarding.route) {
-            OnboardingScreen(navController = navController)
+            OnboardingScreen(navController)
         }
 
         composable(route = Screen.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(navController)
         }
 
-        composable(Screen.Register.route) {
-            RegisterScreen(navController=navController)
+        composable(route = Screen.Register.route) {
+            RegisterScreen(navController)
         }
 
         composable(Screen.CreatePassword.route) {
-            CreatePasswordScreen(navController=navController)
+            CreatePasswordScreen(navController)
         }
 
         composable(Screen.SuccessAccount.route) {
-            AccountSuccessScreen(navController=navController)
+            AccountSuccessScreen(navController)
         }
 
         composable(Screen.ForgotPassword.route) {
-            ForgotPasswordScreen(navController=navController)
+            val forgotPasswordViewModel: ForgotPasswordViewModel = viewModel()
+            ForgotPasswordScreen(
+                navController = navController,
+                viewModel = forgotPasswordViewModel
+            )
         }
 
         composable(Screen.SuccessPass.route) {
-            PasswordSuccessScreen(navController=navController)
+            PasswordSuccessScreen(navController)
         }
 
         composable(route = Screen.Home.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(navController)
         }
 
         composable(
             route = Screen.Details.route,
-            arguments = listOf(
-                navArgument("productId") {
-                    type = NavType.StringType
-                }
-            )
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId")
-            DetailsScreen(
-                navController = navController,
-                productId = productId ?: "1"
-            )
+            val productId = backStackEntry.arguments?.getString("productId") ?: "1"
+            DetailsScreen(navController, productId)
         }
 
-        composable(route = Screen.Cart.route) {
-            CartScreen(navController = navController)
+        composable(Screen.Cart.route) {
+            CartScreen(navController)
         }
 
-        composable(route = Screen.Favorites.route) {
-            FavoritesScreen(navController = navController)
+        composable(Screen.Favorites.route) {
+            FavoritesScreen(navController)
         }
 
-        composable(route = Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+        composable(Screen.Profile.route) {
+            ProfileScreen(navController)
         }
 
-        composable(route = Screen.Search.route) {
-            SearchScreen(navController = navController)
+        composable(Screen.Search.route) {
+            SearchScreen(navController)
         }
     }
 }
