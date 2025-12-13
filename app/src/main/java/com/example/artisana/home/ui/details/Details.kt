@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,9 +37,10 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.example.artisana.R
 import com.example.artisana.core.models.Product
-import com.example.artisana.home.composables.ProductCard
 import com.example.artisana.core.navigation.Screen
+import com.example.artisana.core.notifications.NotificationService
 import com.example.artisana.core.viewmodels.ProductViewModel
+import com.example.artisana.home.composables.ProductCard
 import com.google.accompanist.placeholder.shimmer
 import kotlinx.coroutines.launch
 
@@ -56,6 +58,8 @@ fun DetailsScreen(
 ) {
     val scrollState = rememberScrollState()
     val state by productViewModel.state.collectAsState()
+    val context = LocalContext.current
+    val notificationService = remember { NotificationService(context) }
 
     var selectedImageIndex by remember { mutableIntStateOf(0) }
 
@@ -340,19 +344,24 @@ fun DetailsScreen(
 
                             OutlinedButton(
                                 onClick = {
-                                    productViewModel.addToCart(product!!.id)
-                                    productViewModel.updateQuantity(product!!.id, 1)
-                                    navController.navigate(Screen.Cart.route)
+                                    if (product!!.stock > 0) {
+                                        productViewModel.addToCart(product!!.id)
+                                        productViewModel.updateQuantity(product!!.id, 1)
+                                        navController.navigate(Screen.Cart.route)
+                                    } else {
+                                        notificationService.showProductOutOfStockNotification(product!!.name)
+                                    }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(50.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.primary
+                                    contentColor = MaterialTheme.colorScheme.primary,
+                                    disabledContentColor = Color.Gray
                                 ),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     brush = androidx.compose.ui.graphics.SolidColor(
-                                        MaterialTheme.colorScheme.primary
+                                        if (product!!.stock > 0) MaterialTheme.colorScheme.primary else Color.Gray
                                     )
                                 ),
                                 shape = RoundedCornerShape(4.dp)
@@ -360,13 +369,15 @@ fun DetailsScreen(
                                 Icon(
                                     Icons.Default.Add,
                                     contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(20.dp),
+                                    tint = if (product!!.stock > 0) MaterialTheme.colorScheme.primary else Color.Gray
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     "AJOUTER AU PANIER",
                                     fontSize = 14.sp,
-                                    letterSpacing = 1.sp
+                                    letterSpacing = 1.sp,
+                                    color = if (product!!.stock > 0) MaterialTheme.colorScheme.primary else Color.Gray
                                 )
                             }
 

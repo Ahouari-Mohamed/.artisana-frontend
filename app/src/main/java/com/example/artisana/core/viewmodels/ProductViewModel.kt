@@ -246,6 +246,12 @@ class ProductViewModel(
         }
     }
 
+    fun clearCart() {
+        viewModelScope.launch {
+            repository.clearCart()
+        }
+    }
+
     // Check if product is in cart
     fun isProductInCart(productId: Int): Flow<Boolean> {
         return repository.isProductInCart(productId)

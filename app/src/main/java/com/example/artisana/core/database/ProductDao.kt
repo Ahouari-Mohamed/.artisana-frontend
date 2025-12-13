@@ -43,6 +43,10 @@ interface ProductDao {
     @Query("UPDATE products SET isOnCart = 0 WHERE id = :productId")
     suspend fun removeFromCart(productId: Int)
 
+    // Clear cart
+    @Query("UPDATE products SET isOnCart = 0")
+    suspend fun clearCart()
+
     // check if product is in cart
     @Query("SELECT EXISTS(SELECT isOnCart FROM products WHERE id = :productId AND isOnCart = 1)")
     fun isProductInCart(productId: Int): Flow<Boolean>

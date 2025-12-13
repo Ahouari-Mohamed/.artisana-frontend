@@ -1,5 +1,6 @@
 package com.example.artisana.features.ui.cart
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,11 +8,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
+import com.example.artisana.core.notifications.NotificationService
 import com.example.artisana.core.viewmodels.ProductViewModel
 import com.example.artisana.features.composables.ResultCard
 
@@ -31,6 +33,8 @@ fun CartScreen(
 ) {
     val scrollState = rememberScrollState()
     val state by productViewModel.state.collectAsState()
+    val context = LocalContext.current
+    val notificationService = remember { NotificationService(context) }
 
     val cartItems by remember { productViewModel.getCartProducts() }.collectAsState(emptyList())
 
@@ -153,6 +157,11 @@ fun CartScreen(
                             price * item.quantity
                         }
                     }
+
+                    if (subtotal > 3000) {
+                        notificationService.showCartLimitNotification()
+                    }
+
                     // Bottom Section
                     Column(
                         modifier = Modifier
@@ -197,19 +206,23 @@ fun CartScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Button(
-                            onClick = { /* Checkout action */ },
+                        OutlinedButton(
+                            onClick = {
+                                Toast.makeText(context, "Merci pour votre achat!", Toast.LENGTH_SHORT).show()
+                                productViewModel.clearCart()
+                            },
+                            enabled = cartItems.isNotEmpty(),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
                             shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary,
+                                disabledContentColor = Color.Gray
+                            ),
                             border = BorderStroke(
                                 1.dp,
-                                MaterialTheme.colorScheme.primary
+                                if (cartItems.isNotEmpty()) MaterialTheme.colorScheme.primary else Color.Gray
                             )
                         ) {
                             Text(

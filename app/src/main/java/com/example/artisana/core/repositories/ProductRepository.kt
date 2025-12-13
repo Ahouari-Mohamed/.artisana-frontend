@@ -124,6 +124,10 @@ class ProductRepository(private val productDao: ProductDao) {
         return null
     }
 
+    suspend fun clearCart() {
+        productDao.clearCart()
+    }
+
     // check if product is in cart
     fun isProductInCart(productId: Int): Flow<Boolean> {
         return productDao.isProductInCart(productId)
