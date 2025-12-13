@@ -19,6 +19,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,22 +30,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.artisana.core.models.Product
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.shimmer
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductCard(
     product: Product,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+    productViewModel: ProductViewModel
 ) {
+    val isFavorite by productViewModel.isProductInFavorites(product.id)
+        .collectAsState(initial = product.isFavorite)
+
+    // Get a coroutine scope for click actions
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
@@ -84,7 +92,13 @@ fun ProductCard(
 
             IconButton(
                 onClick = {
-                    viewModel.toggleFavorite(product.id)
+                    scope.launch {
+                        if (isFavorite) {
+                            productViewModel.removeFromFavorites(product.id)
+                        } else {
+                            productViewModel.addToFavorites(product.id)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -92,9 +106,11 @@ fun ProductCard(
                     .size(36.dp)
             ) {
                 Icon(
-                    imageVector = if (product.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Favorite",
-                    tint = if (product.isFavorite) MaterialTheme.colorScheme.primary else Color.White.copy(0.5f)
+                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else Color.White.copy(
+                        0.5f
+                    )
                 )
             }
         }

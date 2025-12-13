@@ -1,153 +1,138 @@
 package com.example.artisana.core.repositories
 
-import com.example.artisana.R
+import com.example.artisana.core.database.ProductDao
 import com.example.artisana.core.models.Product
-import kotlinx.coroutines.delay
+import com.example.artisana.core.network.RetrofitInstance
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import retrofit2.Response
 
-interface ProductRepository {
-    suspend fun getProducts(): List<Product>
-    suspend fun toggleFavorite(productId: Int): Product?
-    suspend fun toggleCart(productId: Int): Product?
-    suspend fun updateQuantity(productId: Int, newQuantity: Int): Product?
-}
+class ProductRepository(private val productDao: ProductDao) {
 
-class StaticProductRepository private constructor() : ProductRepository {
+    // Get products from API
+    suspend fun getProductsFromApi(): Response<List<Product>> {
 
-    // Singleton instance
-    companion object {
-        @Volatile
-        private var instance: StaticProductRepository? = null
+        val response = RetrofitInstance.productApiService.getAllProducts()
 
-        fun getInstance(): StaticProductRepository {
-            return instance ?: synchronized(this) {
-                instance ?: StaticProductRepository().also { instance = it }
+        if (response.isSuccessful) {
+            val remoteProducts = response.body()
+            val localProductsList: List<Product> = productDao.getAllProducts().first()
+
+            remoteProducts?.forEach { remoteProduct ->
+                val localProduct = localProductsList.find { it.id == remoteProduct.id }
+
+                if (localProduct != null) {
+                    remoteProduct.isFavorite = localProduct.isFavorite
+                    remoteProduct.isOnCart = localProduct.isOnCart
+                    remoteProduct.quantity = localProduct.quantity
+                }
             }
         }
+
+        return response
     }
 
-    private val products = mutableListOf(
-        Product(
-            id = 1,
-            name = "Suspension en Laiton - Lanternin",
-            description = "Lanterne en laiton ciselé, style marocain traditionnel avec motifs géométriques.",
-            price = "760 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382700/img_1_1_odndzn.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382883/img_1_2_xhcah2.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382697/img_1_3_eowjge.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382694/img_1_4_cr5saq.png",
-            ),
-            stock = 0
-        ),
-        Product(
-            id = 2,
-            name = "Suspension en Laiton - Étoile",
-            description = "Suspension cylindrique en laiton perforé avec motifs d'étoiles.",
-            price = "480 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382882/img_2_1_wftora.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382696/img_2_2_qgwj6n.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382696/img_2_3_qkqc5s.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382696/img_2_4_wh2z7f.png",
-            ),
-            stock = 9
-        ),
-        Product(
-            id = 3,
-            name = "Pouf en Cuir Brodé - POFA",
-            description = "Pouf marocain artisanal en cuir, broderie rouge et motifs circulaires.",
-            price = "260 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382881/img_3_1_sskfvv.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382690/img_3_2_lb5pth.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382687/img_3_3_rv9y7z.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382691/img_3_4_hzlkol.png",
-            ),
-            stock = 5
-        ),
-        Product(
-            id = 4,
-            name = "Suspension en Laiton - Globe Perforé",
-            description = "Grande lanterne en laiton avec dôme et perforations en forme d'amande.",
-            price = "280 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382885/img_4_1_jkifai.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382699/img_4_2_lomute.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382700/img_4_3_nvssjw.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382683/img_4_4_tfcb6q.png",
-            ),
-            stock = 0
-        ),
-        Product(
-            id = 5,
-            name = "Suspension en Laiton - Ambre",
-            description = "Suspension en laiton avec un verre de couleur ambre pour un éclairage doux.",
-            price = "790 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382882/img_5_1_octpwy.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382685/img_5_2_r5doqs.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382684/img_5_3_gquwsl.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382688/img_5_4_s95ytf.png"
-            ),
-            stock = 1
-        ),
-        Product(
-            id = 6,
-            name = "Suspension en Laiton - Dôme",
-            description = "Suspension semi-sphérique en laiton finement ciselé, idéale pour les plafonds bas.",
-            price = "890 MAD",
-            imageRes = listOf(
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382881/img_6_1_qymgns.jpg",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382681/img_6_2_sa1jxr.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382683/img_6_3_drwmfg.png",
-                "https://res.cloudinary.com/dmbitesey/image/upload/v1765382679/img_6_4_vrkiu7.png"
-            ),
-            stock = 2
-        )
-    )
+    // Get all products from local database
+    fun getAllProductsFromDb(): Flow<List<Product>> = productDao.getAllProducts()
 
-    override suspend fun getProducts(): List<Product> {
-        delay(500) // Simulate network delay
-
-        return products.toList()
+    // Search products from API
+    suspend fun searchProducts(query: String): Response<List<Product>> {
+        return RetrofitInstance.productApiService.searchProducts(query)
     }
 
-    override suspend fun toggleFavorite(productId: Int): Product? {
-        delay(100) // Simulate network delay
+    // Get bestsellers from API
+    suspend fun getBestSellers(): Response<List<Product>> {
+        return RetrofitInstance.productApiService.getBestSellers()
+    }
 
-        val index = products.indexOfFirst { it.id == productId }
-        if (index != -1) {
-            val product = products[index]
-            val updatedProduct = product.copy(isFavorite = !product.isFavorite)
-            products[index] = updatedProduct
-            return updatedProduct
+    // Get recommended products from API
+    suspend fun getRecommendedProducts(): Response<List<Product>> {
+        return RetrofitInstance.productApiService.getRecommendedProducts()
+    }
+
+    // Get product by ID from API
+    suspend fun getProductById(id: Int): Response<Product> {
+        return RetrofitInstance.productApiService.getProductById(id)
+    }
+
+    // Get favorite products from local database
+    fun getFavoriteProducts(): Flow<List<Product>> = productDao.getFavoriteProducts()
+
+    // Get cart products from local database
+    fun getCartProducts(): Flow<List<Product>> = productDao.getCartProducts()
+
+    // Add to favorite(local only)
+    suspend fun addProductToFavorites(productId: Int): Product? {
+        val product = RetrofitInstance.productApiService.getProductById(productId)
+
+        // check if product exists locally
+        val localProduct = productDao.getProductById(productId)
+        if (localProduct != null) {
+            productDao.addToFavorites(productId)
+        } else {
+            product.body()?.let {
+                it.isFavorite = true
+                productDao.insert(it)
+            }
         }
+
         return null
     }
 
-    override suspend fun toggleCart(productId: Int): Product? {
-        delay(100) // Simulate network delay
-
-        val index = products.indexOfFirst { it.id == productId }
-        if (index != -1) {
-            val product = products[index]
-            val updatedProduct = product.copy(isOnCart = !product.isOnCart)
-            products[index] = updatedProduct
-            return updatedProduct
+    // Remove from favorite(local only)
+    suspend fun removeProductFromFavorites(productId: Int): Product? {
+        // check if product exists locally
+        val localProduct = productDao.getProductById(productId)
+        if (localProduct != null) {
+            productDao.removeFromFavorites(productId)
         }
+
         return null
     }
 
-    override suspend fun updateQuantity(productId: Int, newQuantity: Int): Product? {
-        delay(100) // Simulate network delay
+    // check if product is in favorites
+    fun isProductInFavorites(productId: Int): Flow<Boolean> {
+        return productDao.isProductInFavorites(productId)
+    }
 
-        val index = products.indexOfFirst { it.id == productId }
-        if (index != -1) {
-            val product = products[index]
-            val updatedProduct = product.copy(quantity = newQuantity)
-            products[index] = updatedProduct
-            return updatedProduct
+    // Add to cart(local only)
+    suspend fun addProductToCart(productId: Int): Product? {
+        val product = RetrofitInstance.productApiService.getProductById(productId)
+
+        // check if product exists locally
+        val localProduct = productDao.getProductById(productId)
+        if (localProduct != null) {
+            productDao.addToCart(productId)
+        } else {
+            product.body()?.let {
+                it.isOnCart = true
+                productDao.insert(it)
+            }
         }
+
         return null
     }
+
+    // Remove from cart(local only)
+    suspend fun removeProductFromCart(productId: Int): Product? {
+        // check if product exists locally
+        val localProduct = productDao.getProductById(productId)
+        if (localProduct != null) {
+            productDao.removeFromCart(productId)
+        }
+
+        return null
+    }
+
+    // check if product is in cart
+    fun isProductInCart(productId: Int): Flow<Boolean> {
+        return productDao.isProductInCart(productId)
+    }
+
+    // Update quantity (local only)
+    suspend fun updateQuantity(productId: Int, newQuantity: Int): Product? {
+        productDao.updateQuantity(productId, newQuantity)
+        return productDao.getProductById(productId)
+    }
+
 }

@@ -13,28 +13,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.core.composables.currentRoute
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
 import com.example.artisana.features.composables.ResultCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     navController: NavHostController,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+    productViewModel: ProductViewModel
 ) {
     val scrollState = rememberScrollState()
-    val state by viewModel.state.collectAsState()
+    val state by productViewModel.state.collectAsState()
 
-    val favoriteItems = remember(state.products) {
-        viewModel.getFavoriteProducts()
-    }
+    val favoriteItems by remember { productViewModel.getFavoriteProducts() }.collectAsState(emptyList())
 
     Scaffold(
         topBar = {
@@ -104,7 +100,7 @@ fun FavoritesScreen(
                             textAlign = TextAlign.Center
                         )
                         Button(
-                            onClick = { viewModel.loadProducts() },
+                            onClick = { productViewModel.loadProducts() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
@@ -149,7 +145,8 @@ fun FavoritesScreen(
                                     navController.navigate(
                                         Screen.Details.createRoute(productId = product.id.toString())
                                     )
-                                }
+                                },
+                                productViewModel = productViewModel
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }

@@ -1,4 +1,4 @@
-package com.example.artisana.features.ui.profile
+package com.example.artisana.features.viewmodels
 
 import androidx.lifecycle.ViewModel
 import com.example.artisana.core.repositories.AuthRepository

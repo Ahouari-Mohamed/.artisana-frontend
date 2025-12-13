@@ -21,28 +21,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.home.composables.ProductCard
 import com.example.artisana.core.composables.currentRoute
+import com.example.artisana.core.models.Product
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
+import kotlin.collections.isNotEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+    productViewModel: ProductViewModel
 ) {
     val scrollState = rememberScrollState()
-    val state by viewModel.state.collectAsState()
+    val state by productViewModel.state.collectAsState()
+
+    var bestSellers by remember { mutableStateOf<List<Product>>(emptyList()) }
 
     LaunchedEffect(key1 = true) {
-        // Force the ViewModel to load the latest data
-        viewModel.loadProducts()
+        bestSellers = productViewModel.getBestSellers()
     }
 
     Scaffold(
@@ -112,7 +113,7 @@ fun HomeScreen(
                                 textAlign = TextAlign.Center
                             )
                             Button(
-                                onClick = { viewModel.loadProducts() },
+                                onClick = { productViewModel.loadProducts() },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
@@ -182,10 +183,6 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Products Grid
-                        val bestSellers = remember(state.products) {
-                            viewModel.getBestSellers()
-                        }
-
                         if (bestSellers.isNotEmpty()) {
                             Row(
                                 modifier = Modifier
@@ -201,21 +198,20 @@ fun HomeScreen(
                                             navController.navigate(
                                                 Screen.Details.createRoute(productId = product.id.toString())
                                             )
-                                        }
+                                        },
+                                        productViewModel = productViewModel
                                     )
                                 }
                             }
                         } else {
-                            // Placeholder when no products
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    "Aucun produit trouvé",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }

@@ -44,11 +44,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
-import com.example.artisana.auth.viewmodels.AuthViewModel
+import com.example.artisana.core.viewmodels.AuthViewModel
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.core.composables.currentRoute
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.theme.LocalThemeState
+import com.example.artisana.features.viewmodels.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

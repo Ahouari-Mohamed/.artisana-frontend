@@ -16,7 +16,8 @@ import com.example.artisana.auth.ui.forgotPassword.PasswordSuccessScreen
 import com.example.artisana.home.ui.details.DetailsScreen
 import com.example.artisana.auth.ui.register.CreatePasswordScreen
 import com.example.artisana.auth.ui.register.AccountSuccessScreen
-import com.example.artisana.auth.viewmodels.AuthViewModel
+import com.example.artisana.core.viewmodels.ProductViewModel
+import com.example.artisana.core.viewmodels.AuthViewModel
 import com.example.artisana.auth.viewmodels.ForgotPasswordViewModel
 import com.example.artisana.features.ui.profile.ProfileScreen
 import com.example.artisana.features.ui.cart.CartScreen
@@ -29,18 +30,12 @@ import com.example.artisana.splash.ui.welcome.WelcomeScreen
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
+    productViewModel: ProductViewModel,
+    startDestination: String = Screen.Welcome.route
 ) {
-    val authViewModel: AuthViewModel = viewModel()
-    val isLoggedIn = authViewModel.isUserLoggedIn.collectAsState()
-
-    val startDestination = when (isLoggedIn.value) {
-        true -> Screen.Home.route
-        false -> Screen.Welcome.route
-    }
-
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = startDestination
     ) {
         composable(Screen.Welcome.route) {
             val authViewModel: AuthViewModel = viewModel()
@@ -51,27 +46,22 @@ fun SetupNavGraph(
                 isLoggedIn = isLoggedIn
             )
         }
-
-
-
         composable(route = Screen.Onboarding.route) {
-            OnboardingScreen(navController)
+            OnboardingScreen(navController = navController)
         }
 
         composable(route = Screen.Login.route) {
-            LoginScreen(navController)
+            LoginScreen(navController = navController)
         }
 
-        composable(route = Screen.Register.route) {
-            RegisterScreen(navController)
+        composable(Screen.Register.route) {
+            RegisterScreen(navController=navController)
         }
-
         composable(Screen.CreatePassword.route) {
-            CreatePasswordScreen(navController)
+            CreatePasswordScreen(navController=navController)
         }
-
         composable(Screen.SuccessAccount.route) {
-            AccountSuccessScreen(navController)
+            AccountSuccessScreen(navController=navController)
         }
 
         composable(Screen.ForgotPassword.route) {
@@ -81,37 +71,44 @@ fun SetupNavGraph(
                 viewModel = forgotPasswordViewModel
             )
         }
-
         composable(Screen.SuccessPass.route) {
-            PasswordSuccessScreen(navController)
+            PasswordSuccessScreen(navController=navController)
         }
 
         composable(route = Screen.Home.route) {
-            HomeScreen(navController)
+            HomeScreen(navController = navController, productViewModel = productViewModel)
         }
 
         composable(
             route = Screen.Details.route,
-            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("productId") {
+                    type = NavType.StringType
+                }
+            )
         ) { backStackEntry ->
-            val productId = backStackEntry.arguments?.getString("productId") ?: "1"
-            DetailsScreen(navController, productId)
+            val productId = backStackEntry.arguments?.getString("productId")
+            DetailsScreen(
+                navController = navController,
+                productViewModel = productViewModel,
+                productId = productId ?: "1"
+            )
         }
 
-        composable(Screen.Cart.route) {
-            CartScreen(navController)
+        composable(route = Screen.Cart.route) {
+            CartScreen(navController = navController, productViewModel = productViewModel)
         }
 
-        composable(Screen.Favorites.route) {
-            FavoritesScreen(navController)
+        composable(route = Screen.Favorites.route) {
+            FavoritesScreen(navController = navController, productViewModel = productViewModel)
         }
 
-        composable(Screen.Profile.route) {
-            ProfileScreen(navController)
+        composable(route = Screen.Profile.route) {
+            ProfileScreen(navController = navController)
         }
 
-        composable(Screen.Search.route) {
-            SearchScreen(navController)
+        composable(route = Screen.Search.route) {
+            SearchScreen(navController = navController, productViewModel = productViewModel)
         }
     }
 }

@@ -20,7 +20,9 @@ import com.example.artisana.core.navigation.Screen
 import kotlinx.coroutines.delay
 
 @Composable
-fun WelcomeScreen(navController: NavHostController, isLoggedIn: Boolean
+fun WelcomeScreen(
+    navController: NavHostController,
+    isLoggedIn: Boolean
 ) {
     val brownColor = Color(0xFFB4916C)
 

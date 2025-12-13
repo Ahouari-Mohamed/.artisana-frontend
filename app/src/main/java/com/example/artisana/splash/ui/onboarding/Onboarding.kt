@@ -23,7 +23,7 @@ import com.example.artisana.R
 import com.example.artisana.core.navigation.Screen
 
 @Composable
-fun OnboardingScreen(navController: NavHostController,) {
+fun OnboardingScreen(navController: NavHostController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,17 +30,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.example.artisana.R
+import com.example.artisana.core.models.Product
 import com.example.artisana.home.composables.ProductCard
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
 import com.google.accompanist.placeholder.shimmer
+import kotlinx.coroutines.launch
 
 data class ServiceInfo(
     val icon: Int,
@@ -50,30 +51,42 @@ data class ServiceInfo(
 @Composable
 fun DetailsScreen(
     navController: NavHostController,
+    productViewModel: ProductViewModel,
     productId: String,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
 ) {
     val scrollState = rememberScrollState()
-    val state by viewModel.state.collectAsState()
+    val state by productViewModel.state.collectAsState()
 
     var selectedImageIndex by remember { mutableIntStateOf(0) }
 
-    // Find the current product from the ViewModel state (live data)
-    val product = remember(state.products, productId) {
-        state.products.find { it.id == productId.toIntOrNull() }
-    }
+    // Find the current product
+    var product by remember { mutableStateOf<Product?>(null) }
 
     // Get recommended products
-    val recommendedProducts = remember(state.products, productId) {
-        viewModel.getRecommendProducts(productId.toIntOrNull() ?: 0)
-    }
+    var recommendedProducts by remember { mutableStateOf<List<Product>>(emptyList()) }
 
+    LaunchedEffect(key1 = true) {
+        product = productViewModel.getProductById(productId.toInt())
+        recommendedProducts = productViewModel.getRecommendProducts(productId.toInt())
+    }
 
     val services = listOf(
         ServiceInfo(R.drawable.ic_shipping, "Livraison forfaitaire gratuite"),
         ServiceInfo(R.drawable.ic_paiment_politique, "Politique de paiement à la livraison"),
         ServiceInfo(R.drawable.ic_refresh, "Politique de retour")
     )
+
+    val isFavorite = remember { mutableStateOf<Boolean?>(null) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(product) {
+        val currentProduct = product
+        if (currentProduct != null) {
+            productViewModel.isProductInFavorites(currentProduct.id).collect { status ->
+                isFavorite.value = status
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -120,7 +133,7 @@ fun DetailsScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             when {
-                state.isLoading -> {
+                state.isLoading || product == null -> {
                     // Loading state
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -131,32 +144,7 @@ fun DetailsScreen(
                         )
                     }
                 }
-                product == null -> {
-                    // Product not found
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = "Product not found",
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 18.sp
-                            )
-                            Button(
-                                onClick = { navController.navigateUp() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Text("Go Back")
-                            }
-                        }
-                    }
-                }
+
                 else -> {
                     // Success state - Show product details
                     Column(
@@ -172,7 +160,7 @@ fun DetailsScreen(
                                 .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
                         ) {
                             SubcomposeAsyncImage(
-                                model = product.imageRes[selectedImageIndex],
+                                model = product!!.imageRes[selectedImageIndex],
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop,
@@ -202,15 +190,25 @@ fun DetailsScreen(
 
                             // Favorite button - uses live data
                             IconButton(
-                                onClick = { viewModel.toggleFavorite(product.id) },
+                                onClick = {
+                                    scope.launch {
+                                        if (isFavorite.value == true) {
+                                            productViewModel.removeFromFavorites(product!!.id)
+                                        } else {
+                                            productViewModel.addToFavorites(product!!.id)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(16.dp)
                             ) {
                                 Icon(
-                                    if (product.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                    if (isFavorite.value == true) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                                     contentDescription = "Favorite",
-                                    tint = if (product.isFavorite) MaterialTheme.colorScheme.primary else Color.White.copy(0.5f)
+                                    tint = if (isFavorite.value == true) MaterialTheme.colorScheme.primary else Color.White.copy(
+                                        0.5f
+                                    )
                                 )
                             }
                         }
@@ -220,14 +218,21 @@ fun DetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp, horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                8.dp,
+                                Alignment.CenterHorizontally
+                            ),
                         ) {
                             items(4) { index ->
                                 Box(
                                     modifier = Modifier
                                         .size(80.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.1f))
+                                        .background(
+                                            MaterialTheme.colorScheme.inverseSurface.copy(
+                                                alpha = 0.1f
+                                            )
+                                        )
                                         .border(
                                             width = if (selectedImageIndex == index) 2.dp else 0.dp,
                                             color = if (selectedImageIndex == index) MaterialTheme.colorScheme.primary else Color.Transparent,
@@ -237,7 +242,7 @@ fun DetailsScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     SubcomposeAsyncImage(
-                                        model = product.imageRes[index],
+                                        model = product!!.imageRes[index],
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop,
@@ -279,14 +284,14 @@ fun DetailsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 Text(
-                                    text = product.name,
+                                    text = product!!.name,
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                if (product.stock > 0) {
+                                if (product!!.stock > 0) {
                                     Text(
                                         text = "En Stock",
                                         fontSize = 14.sp,
@@ -305,7 +310,7 @@ fun DetailsScreen(
 
                             // Price
                             Text(
-                                text = product.price,
+                                text = product!!.price,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = MaterialTheme.colorScheme.primary
@@ -325,7 +330,7 @@ fun DetailsScreen(
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
-                                text = product.description,
+                                text = product!!.description,
                                 fontSize = 14.sp,
                                 lineHeight = 22.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -335,8 +340,8 @@ fun DetailsScreen(
 
                             OutlinedButton(
                                 onClick = {
-                                    viewModel.toggleCart(product.id)
-                                    viewModel.updateQuantity(product.id, 1)
+                                    productViewModel.addToCart(product!!.id)
+                                    productViewModel.updateQuantity(product!!.id, 1)
                                     navController.navigate(Screen.Cart.route)
                                 },
                                 modifier = Modifier
@@ -430,7 +435,8 @@ fun DetailsScreen(
                                             navController.navigate(
                                                 Screen.Details.createRoute(productId = recommendedProduct.id.toString())
                                             )
-                                        }
+                                        },
+                                        productViewModel = productViewModel
                                     )
                                 }
                             }

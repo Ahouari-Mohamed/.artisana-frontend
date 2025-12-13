@@ -2,6 +2,7 @@ package com.example.artisana.features.ui.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,28 +26,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.artisana.R
 import com.example.artisana.core.composables.BottomNavigationBar
 import com.example.artisana.core.composables.currentRoute
 import com.example.artisana.core.navigation.Screen
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
 import com.example.artisana.features.composables.ResultCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavHostController,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+    productViewModel: ProductViewModel
 ) {
     val scrollState = rememberScrollState()
-    val state by viewModel.state.collectAsState()
+    val state by productViewModel.state.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     var showRecentSearches by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    val isSearching by productViewModel.isSearching.collectAsState(initial = false)
 
     val recentSearches = remember {
         mutableStateListOf(
@@ -56,16 +56,9 @@ fun SearchScreen(
         )
     }
 
-    // Filter products based on search query
-    val searchResults = remember(state.products, searchQuery) {
-        if (searchQuery.isBlank()) {
-            state.products
-        } else {
-            state.products.filter { product ->
-                product.name.contains(searchQuery, ignoreCase = true) ||
-                        product.description.contains(searchQuery, ignoreCase = true)
-            }
-        }
+    val searchResults by productViewModel.searchResults.collectAsState()
+    LaunchedEffect(searchQuery) {
+        productViewModel.searchProducts(searchQuery)
     }
 
     // Filtered recent searches based on searchQuery
@@ -123,6 +116,11 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { showRecentSearches = false }
+                ),
         ) {
             when {
                 state.isLoading -> {
@@ -152,7 +150,7 @@ fun SearchScreen(
                                 textAlign = TextAlign.Center
                             )
                             Button(
-                                onClick = { viewModel.loadProducts() },
+                                onClick = { productViewModel.loadProducts() },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
@@ -189,7 +187,7 @@ fun SearchScreen(
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
                                         showRecentSearches =
-                                            focusState.isFocused || searchQuery.isNotEmpty()
+                                            focusState.isFocused || (focusState.isFocused && searchQuery.isEmpty()) || searchQuery.isNotEmpty()
                                     },
                                 placeholder = {
                                     Text(
@@ -270,31 +268,42 @@ fun SearchScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Search Results
-                        if (searchResults.isEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Aucun produit trouvé",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                    fontSize = 16.sp
+                        when {
+                            isSearching -> {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                        } else {
-                            searchResults.forEach { product ->
-                                ResultCard(
-                                    product = product,
-                                    page = "Search",
-                                    onClick = {
-                                        navController.navigate(
-                                            Screen.Details.createRoute(productId = product.id.toString())
+
+                            else -> {
+                                if (searchResults.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Aucun produit trouvé",
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                            fontSize = 16.sp
                                         )
                                     }
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                } else {
+                                    searchResults.forEach { product ->
+                                        ResultCard(
+                                            product = product,
+                                            page = "Search",
+                                            onClick = {
+                                                navController.navigate(
+                                                    Screen.Details.createRoute(productId = product.id.toString())
+                                                )
+                                            },
+                                            productViewModel = productViewModel
+                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
+                                }
                             }
                         }
                     }

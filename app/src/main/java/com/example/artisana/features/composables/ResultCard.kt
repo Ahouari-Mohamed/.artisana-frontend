@@ -24,11 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.artisana.core.models.Product
 import com.example.artisana.core.viewmodels.ProductViewModel
-import com.example.artisana.core.viewmodels.ProductViewModelFactory
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.shimmer
@@ -38,7 +36,7 @@ fun ResultCard(
     product: Product,
     page: String,
     onClick: () -> Unit,
-    viewModel: ProductViewModel = viewModel(factory = ProductViewModelFactory())
+    productViewModel: ProductViewModel
 ) {
     Row(
         modifier = Modifier
@@ -121,7 +119,7 @@ fun ResultCard(
                 if (page == "Favorites") {
                     IconButton(
                         onClick = {
-                            viewModel.toggleFavorite(product.id)
+                            productViewModel.removeFromFavorites(product.id)
                         },
                         modifier = Modifier
                             .size(24.dp)
@@ -138,7 +136,7 @@ fun ResultCard(
                 if (page == "Cart") {
                     IconButton(
                         onClick = {
-                            viewModel.toggleCart(product.id)
+                            productViewModel.removeFromCart(product.id)
                         },
                         modifier = Modifier
                             .size(24.dp)
@@ -165,7 +163,7 @@ fun ResultCard(
                     IconButton(
                         onClick = {
                             if (product.quantity > 1)
-                                viewModel.updateQuantity(product.id, product.quantity - 1)
+                                productViewModel.updateQuantity(product.id, product.quantity - 1)
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
@@ -187,7 +185,7 @@ fun ResultCard(
                     IconButton(
                         onClick = {
                             if (product.quantity < 10)
-                                viewModel.updateQuantity(product.id, product.quantity + 1)
+                                productViewModel.updateQuantity(product.id, product.quantity + 1)
                         },
                         modifier = Modifier.size(32.dp)
                     ) {
